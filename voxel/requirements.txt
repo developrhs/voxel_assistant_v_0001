@@ -1,7 +1,8 @@
 # Dependências do projeto VOXEL
 # Bibliotecas padrão do Python não precisam ser instaladas.
 
-# Captura e processamento básico de áudio
+# Imagens de perfil e processamento básico de áudio
+Pillow>=10.0
 numpy>=1.24
 sounddevice>=0.4.6
 

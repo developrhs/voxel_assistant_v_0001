@@ -1,28 +1,14 @@
 {
     "_comment": "General System Settings - Voxel Assistant",
-    "_version": "1.0.0",
-    "_last_modified": "2026-08-12 03:26:35",
+    "_version": "1.2.0",
+    "_last_modified": "2026-08-12 20:00:00",
     "keyword_status": true,
     "keyword_master": "Chat",
     "awaiting_duration_status": true,
     "awaiting_duration": "120s",
     "waiting_id_command": 5,
-    "chatbot_output": {
-        "options": [
-            "Text",
-            "Voice",
-            "Both"
-        ],
-        "selected": "Both"
-    },
-    "user_input": {
-        "options": [
-            "Keyboard",
-            "Voice",
-            "Both"
-        ],
-        "selected": "Both"
-    },
+    "chatbot_output": "Both",
+    "user_input": "Both",
     "status_chatbot": {
         "options": [
             "Assistant",
@@ -90,7 +76,7 @@
             1024,
             2048
         ],
-        "threshold_volume": 0.03,
+        "threshold_volume": "0.03",
         "threshold_min": 0.001,
         "threshold_max": 0.1,
         "silence_time": "3.0",
@@ -172,7 +158,7 @@
         "pyttsx3_rate": 150.0,
         "rate_min": 50,
         "rate_max": 400,
-        "voice_volume": 0.4,
+        "voice_volume": "0.4",
         "volume_min": 0.0,
         "volume_max": 1.0,
         "conversation_tone": "professional",
@@ -200,7 +186,7 @@
         "wait_for_audio_end": true
     },
     "local_ai_config": {
-        "default_model": "ollama",
+        "default_model": "transformers",
         "model_options": [
             "echo",
             "simple",
@@ -209,10 +195,10 @@
             "ollama",
             "transformers"
         ],
-        "temperature": 0.7,
+        "temperature": "0.7",
         "temperature_min": 0.0,
         "temperature_max": 2.0,
-        "top_p": 0.9,
+        "top_p": "0.9",
         "top_p_min": 0.0,
         "top_p_max": 1.0,
         "max_tokens": "500",
@@ -258,9 +244,160 @@
             60,
             120
         ],
-        "max_tokens_online": 1000,
-        "temperature_online": 0.7,
+        "max_tokens_online": "1000",
+        "temperature_online": "0.7",
         "save_history_online": true,
         "local_fallback_mode": true
+    },
+    "video_config": {
+        "capture_enabled": true,
+        "capture_source": "screen",
+        "capture_display": "1",
+        "screen_width": 1440,
+        "screen_height": 900,
+        "screen_resolution": "1440x900",
+        "capture_width": "1440",
+        "capture_height": "900",
+        "capture_fps": "30",
+        "capture_color_depth": "32",
+        "capture_format": "jpg",
+        "capture_quality": "90",
+        "fullscreen": true,
+        "vsync": true,
+        "recording_enabled": false,
+        "recording_directory": "arquivos/capturas",
+        "screenshot_hotkey": "PrintScreen",
+        "video_hotkey": "Ctrl+Alt+R",
+        "format_options": [
+            "png",
+            "jpg",
+            "bmp",
+            "mp4"
+        ],
+        "fps_options": [
+            15,
+            24,
+            30,
+            60
+        ],
+        "color_depth_options": [
+            16,
+            24,
+            32
+        ],
+        "source_options": [
+            "screen",
+            "window",
+            "region"
+        ]
+    },
+    "controler_config": {
+        "enabled": true,
+        "active_profile_id": 1,
+        "active_profile_name": "Padrão",
+        "input_mode": "keyboard",
+        "keyboard_enabled": true,
+        "joystick_enabled": false,
+        "joystick_device": "",
+        "filter_unknown_actions": true,
+        "allow_command_arguments": false,
+        "repeat_delay_ms": "300",
+        "repeat_interval_ms": "80",
+        "keyboard_layout": "pt-BR",
+        "joystick_deadzone": 0.15,
+        "input_mode_options": [
+            "keyboard",
+            "joystick",
+            "both"
+        ],
+        "keyboard_layout_options": [
+            "pt-BR",
+            "en-US"
+        ],
+        "mapping_format": "controler_profile_database",
+        "combo_timeout_seconds": 3.0,
+        "block_system_keys": false,
+        "trigger_precedence": [
+            "SEQUENCIA",
+            "HOTKEY",
+            "TECLA_UNICA"
+        ]
+    },
+    "support_diagnostics": {
+        "last_run_at": "2026-08-12T19:43:31",
+        "tests": {
+            "local_ai": {
+                "status": "WARNING",
+                "message": "[Errno 111] Connection refused",
+                "model": "ollama",
+                "response": "",
+                "error": "[Errno 111] Connection refused"
+            }
+        },
+        "audio_input": {
+            "auto_detect_device": true,
+            "save_recorded_samples": false,
+            "test_duration_seconds": 3,
+            "calibration_samples": 0,
+            "test_engines": [
+                "google",
+                "sphinx",
+                "wit",
+                "azure"
+            ]
+        },
+        "audio_output": {
+            "test_text": "Este é um teste de voz do VOXEL.",
+            "test_engines": [
+                "pyttsx3",
+                "google_tts",
+                "edge_tts"
+            ],
+            "save_test_audio": false
+        },
+        "local_ai": {
+            "test_prompt": "Responda apenas: teste local concluído.",
+            "test_timeout_seconds": 60,
+            "save_test_response": true
+        },
+        "online_ai": {
+            "test_prompt": "Responda apenas: teste online concluído.",
+            "test_timeout_seconds": 30,
+            "save_test_response": false,
+            "never_store_api_key_in_test_results": true
+        }
+    },
+    "configuracao_controle": {
+        "controle_ativo": true,
+        "perfil_ativo_id": 1,
+        "perfil_ativo_nome": "Padrão",
+        "dispositivo_joystick_id": "",
+        "dispositivo_joystick_opcoes": [],
+        "deadzone_joystick": 0.15,
+        "bloquear_teclas_sistema": false,
+        "combo_timeout_segundos": 3.0,
+        "modo_entrada": "keyboard",
+        "teclado_ativo": true,
+        "joystick_ativo": false,
+        "precedencia_gatilhos": [
+            "SEQUENCIA",
+            "HOTKEY",
+            "TECLA_UNICA"
+        ]
+    },
+    "configuracao_video": {
+        "dispositivo_camera": null,
+        "dispositivo_camera_opcoes": [],
+        "resolucao_largura": 1440,
+        "resolucao_altura": 900,
+        "fps_captura": 30,
+        "fps_opcoes": [
+            15,
+            24,
+            30,
+            60
+        ],
+        "captura_tela_inteira": false,
+        "gravar_log_video": false
     }
 }

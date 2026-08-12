@@ -1,0 +1,53 @@
+{
+  "system": {
+    "name": "command_vision",
+    "version": "0.2.0",
+    "log_level": "INFO",
+    "poll_interval_ms": 100,
+    "default_profile_id": null
+  },
+  "display": {
+    "monitor_index": 1,
+    "all_screens": false,
+    "width": null,
+    "height": null,
+    "left": 0,
+    "top": 0,
+    "pixel_format": "RGB"
+  },
+  "gpu": {
+    "detected": false,
+    "name": null,
+    "vendor": null,
+    "memory_mb": null,
+    "driver": null,
+    "resolution": null,
+    "notes": "Preenchido automaticamente quando o diagnóstico de hardware for executado."
+  },
+  "vision": {
+    "default_tolerance": 20,
+    "minimum_matching_pixels": 1,
+    "capture_format": "png",
+    "capture_directory": "captures"
+  },
+  "input": {
+    "keyboard_enabled": true,
+    "joystick_enabled": false,
+    "keyboard_backend": "pyautogui",
+    "joystick_backend": "vgamepad"
+  },
+  "aim": {
+    "show": true,
+    "diameter": 120,
+    "border_width": 3,
+    "border_color": "#00ff00",
+    "crosshair": true,
+    "crosshair_width": 1,
+    "crosshair_color": "#ffffff",
+    "opacity": 0.35,
+    "capture_button": "left",
+    "hide_before_capture_ms": 150,
+    "save_capture": true,
+    "capture_name": "aim_capture"
+  }
+}

@@ -1,4 +1,5 @@
 import importlib.util
+import inspect
 import json
 from datetime import datetime
 from pathlib import Path
@@ -63,12 +64,12 @@ class ChatbotConfig:
         self.log_directory.mkdir(parents=True, exist_ok=True)
         self.log_path = self.log_directory / f"{date_text}_chat_{self.chat_id or 'session'}.txt"
 
-    def capture_user_input(self):
+    def capture_user_input(self, prefer_voice=False):
         selected = self.configuration.get("user_input", {}).get("selected", "Keyboard")
+        if (selected == "Voice" or (selected == "Both" and prefer_voice)) and self.audio_input:
+            return str(self.audio_input.get_text_from_mic()).strip()
         if selected in {"Keyboard", "Both"}:
             return str(self.input_provider()).strip()
-        if selected == "Voice" and self.audio_input:
-            return str(self.audio_input.get_text_from_mic()).strip()
         return ""
 
     @staticmethod
@@ -79,17 +80,51 @@ class ChatbotConfig:
         return "------------------------------------------------------------------\n" f"[{self._timestamp()}] - [{owner}]\n" f"{text}\n"
 
     def write_to_daily_log(self, content):
+        normalized = content if content.endswith("\n") else content + "\n"
         with self.log_path.open("a", encoding="utf-8") as file:
-            file.write(content if content.endswith("\n") else content + "\n")
+            file.write(normalized)
+        if self.database and self.chat_id:
+            try:
+                self.database.append_chat_log(self.chat_id, normalized)
+            except Exception as error:
+                self.initialization_log.append(f"chat_history: {error}")
 
     def _execute_command(self, result, prompt):
         if self.command_executor:
             return self.command_executor(result, prompt)
         command_file = result.get("script_file")
+        if command_file:
+            try:
+                filename = Path(str(command_file)).name
+                if not filename.endswith(".py"):
+                    filename += ".py"
+                module_path = self.project_root / "config" / "command" / filename
+                if module_path.exists():
+                    module_name = f"voxel_command_{module_path.stem}"
+                    spec = importlib.util.spec_from_file_location(module_name, module_path)
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+                    class_name = next((name for name in dir(module) if name.lower().startswith("command")), None)
+                    target = getattr(module, class_name)(project_root=self.project_root) if class_name else module
+                    runner = getattr(target, "execute", None) or getattr(target, "run", None)
+                    if runner is not None:
+                        keyword = result.get("command_key", "")
+                        argument = result.get("argument_text", "") or None
+                        parameters = inspect.signature(runner).parameters
+                        required = [parameter for parameter in parameters.values() if parameter.default is inspect.Parameter.empty and parameter.kind in (parameter.POSITIONAL_ONLY, parameter.POSITIONAL_OR_KEYWORD)]
+                        if not required:
+                            executed = runner()
+                        elif len(parameters) >= 2:
+                            executed = runner(keyword, argument)
+                        else:
+                            executed = runner(argument or keyword)
+                        if isinstance(executed, dict):
+                            return executed.get("message") or executed.get("question") or str(executed)
+                        return str(executed)
+            except Exception as error:
+                self.initialization_log.append(f"command_execution: {error}")
         if result.get("conditions"):
             return result["conditions"][0].get("response") or result.get("message", "Comando executado.")
-        if command_file:
-            return result.get("message", f"Comando {command_file} identificado.")
         return result.get("message", "Comando executado.")
 
     def _assistant_response(self, prompt):
@@ -104,8 +139,21 @@ class ChatbotConfig:
             return self._execute_command(result, prompt)
         return None
 
-    def _ai_response(self, prompt):
+    @staticmethod
+    def _normalize_mode(value, aliases):
+        text = str(value or "").strip().lower()
+        return aliases.get(text, value)
+
+    def _chatbot_mode(self):
+        selected = self.configuration.get("status_chatbot", {}).get("selected", "Both")
+        return self._normalize_mode(selected, {"assistant": "Assistant", "artificial intelligence": "Artificial Intelligence", "ai": "Artificial Intelligence", "both": "Both"})
+
+    def _ai_mode(self):
         selected = self.configuration.get("status_ai", {}).get("selected", "Offline AI")
+        return self._normalize_mode(selected, {"online ai": "Online AI", "online": "Online AI", "offline ai": "Offline AI", "local ai": "Offline AI", "local": "Offline AI", "both": "Both"})
+
+    def _ai_response(self, prompt):
+        selected = self._ai_mode()
         if selected in {"Online AI", "Both"} and self.is_online_ai_ready and self.online_ai:
             response = self.online_ai.get_online_response(prompt)
             if response not in {"NO_INTERNET_CONNECTION", "MISSING_API_KEY", "ONLINE_AI_TIMEOUT", "ONLINE_AI_ERROR"}:
@@ -126,7 +174,7 @@ class ChatbotConfig:
             return {"emissor": "VOXEL", "resposta": ""}
         user_block = self._format_block(self.username, prompt)
         self.write_to_daily_log(user_block)
-        mode = self.configuration.get("status_chatbot", {}).get("selected", "Both")
+        mode = self._chatbot_mode()
         response = None
         emitter = "VOXEL"
         if mode in {"Assistant", "Both"}:
@@ -136,7 +184,10 @@ class ChatbotConfig:
         if response is None and mode in {"Artificial Intelligence", "Both"}:
             response, emitter = self._ai_response(prompt)
         if response is None:
-            response = "Desculpe, comando não reconhecido. O modo Inteligência Artificial está desativado."
+            if mode == "Assistant":
+                response = "Desculpe, comando não reconhecido. O modo Inteligência Artificial está desativado."
+            else:
+                response = "Não foi possível obter uma resposta com as configurações atuais."
         result = {"emissor": emitter, "resposta": str(response)}
         self.send_response_output(emitter, result["resposta"])
         return result

@@ -65,16 +65,33 @@ class AssistantConfig:
         return self.process_user_input(text)
 
     def _find_command(self, command_text):
+        normalized = str(command_text or "").strip()
         with sqlite3.connect(self.database_path) as connection:
             command = connection.execute(
                 """
-                SELECT tb_command_id, tb_command_file, tb_command_status
+                SELECT tb_command_id, tb_command_key, tb_command_file, tb_command_status
                 FROM tb_command
                 WHERE LOWER(tb_command_key) = LOWER(?)
                   AND tb_command_status = 'ativo'
+                LIMIT 1
                 """,
-                (command_text,),
+                (normalized,),
             ).fetchone()
+            argument_text = ""
+            if command is None and normalized:
+                command = connection.execute(
+                    """
+                    SELECT tb_command_id, tb_command_key, tb_command_file, tb_command_status
+                    FROM tb_command
+                    WHERE tb_command_status = 'ativo'
+                      AND LOWER(?) LIKE LOWER(tb_command_key) || '%'
+                    ORDER BY LENGTH(tb_command_key) DESC
+                    LIMIT 1
+                    """,
+                    (normalized,),
+                ).fetchone()
+                if command is not None:
+                    argument_text = normalized[len(str(command[1])):].strip()
 
             if command is None:
                 return {
@@ -82,7 +99,7 @@ class AssistantConfig:
                     "message": "Comando não encontrado. Diga 'ajuda' para ver a lista de comandos disponíveis.",
                 }
 
-            command_id, script_file, _command_status = command
+            command_id, command_key, script_file, _command_status = command
             conditions = connection.execute(
                 """
                 SELECT tb_condition_key, tb_condition_question,
@@ -97,7 +114,9 @@ class AssistantConfig:
         return {
             "status": "SUCCESS",
             "command_id": command_id,
+            "command_key": command_key,
             "script_file": script_file,
+            "argument_text": argument_text,
             "conditions": [
                 {
                     "key": row[0],

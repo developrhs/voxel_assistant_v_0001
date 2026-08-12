@@ -1,0 +1,37 @@
+command_vision - log da atualização
+
+Data: 2026-08-12
+
+Alterações:
+- Adicionado suporte a configuração de monitor, resolução e diagnóstico básico de GPU.
+- Criado vision/db/db_system_vision.db.
+- Criadas tabelas tb_capture, tb_color, tb_profile, tb_command, tb_detection e tabelas de relacionamento.
+- Implementada captura de área configurada e cálculo de cor dominante.
+- Implementada comparação de pixels por cor e tolerância.
+- Implementado executor opcional para teclado via pyautogui e joystick virtual via vgamepad.
+
+Testes:
+- python3 -m py_compile command_vision.py vision/*.py vision/db/*.py: OK
+- python3 command_vision.py --init-db: OK
+- Verificação SQLite: tabelas criadas corretamente.
+
+Atualização da mira:
+- Adicionada seção aim ao database_vision.json.
+- Criado vision/vision_scope.py com mira circular que acompanha o cursor.
+- Clique esquerdo captura a área interna do círculo após ocultar a mira.
+- Captura registra cor média, posição do cursor e diâmetro.
+- Adicionado comando: py command_vision.py --aim.
+- Validação de sintaxe e status: OK.
+
+Atualização da interface principal:
+- Criado main_vision.py com GUI escura e elegante baseada em Tkinter/ttk.
+- Adicionadas abas Visão geral, Mira circular, Tela e GPU, Entrada e Banco SQLite.
+- Incluídos botões para salvar configurações, detectar hardware, inicializar tabelas e abrir a mira.
+- Validação de sintaxe e status: OK.
+
+Atualização de visualização dos dados:
+- main_vision.py agora exibe perfis cadastrados e contagem de capturas, cores e comandos associados.
+- Adicionada aba Capturas com áreas, cores RGB, tolerâncias e comandos.
+- Adicionada aba Histórico com registros de detecção e correspondência visual.
+- Consultas SQLite integradas ao botão de atualização das tabelas.
+- Validação de sintaxe, inicialização do banco e status: OK.

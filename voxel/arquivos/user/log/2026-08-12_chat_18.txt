@@ -1,0 +1,6 @@
+------------------------------------------------------------------
+[12/08/2026 - 18:46:03] - [user]
+Chat mensagem de teste de fallback
+------------------------------------------------------------------
+[12/08/2026 - 18:46:03] - [VOXEL]
+Desculpe, comando não reconhecido. O modo Inteligência Artificial está desativado.
