@@ -1,0 +1,187 @@
+🏗️ Mapa de Hierarquia do Layout (Visão Geral)
+
+main.py (Janela Principal)
+ │
+ ├── main_header.py  (Menu Superior: "Início" | "Assistente")
+ ├── main_center.py  (Gerenciador de Telas Centrais / Stack Container)
+ │    │
+ │    ├── center_under_construction.py (Tela Inicial Padrão: "Under Construction")
+ │    └── center_assistant.py          (Container Mestre do Assistente)
+ │         │
+ │         ├── model_main_screen.py (Área Central de Conteúdo Variável)
+ │         │    ├── screen_chatbot.py
+ │         │    │    ├── chatbot_left.py   (Histórico de Conversas via SQLite: tb_chat)
+ │         │    │    ├── chatbot_center.py (Chat Visual + Input de Texto/Voz + Log)
+ │         │    │    └── chatbot_right.py  (Painel de Status/Detalhes em Tempo Real)
+ │         │    │
+ │         │    ├── screen_command.py
+ │         │    │    ├── command_registration.py     (CRUD na tabela tb_comando)
+ │         │    │    └── conditional_registration.py (CRUD na tabela tb_condicao)
+ │         │    │
+ │         │    ├── screen_config.py
+ │         │    │    ├── config_general.py      (database_general.json -> status, keyword, tema)
+ │         │    │    ├── config_audio_input.py  (database_general.json -> configuracao_microfone)
+ │         │    │    ├── config_audio_output.py (database_general.json -> configuracao_voz)
+ │         │    │    ├── config_local_ai.py     (database_general.json -> configuracao_ia_local)
+ │         │    │    └── config_online_ai.py    (database_general.json -> configuracao_ia_online)
+ │         │    │
+ │         │    └── screen_user.py (Gerenciamento do Usuário via SQLite: tb_user)
+ │         │
+ │         ├── model_right_bar.py  (Barra Lateral Direita do Assistente)
+ │         └── model_bottom_bar.py (Navegação Abaixo: "Assistente" | "Comandos" | "Configurações" | "Usuário")
+ │
+ └── main_footer.py  (Barra de Status Inferior do Sistema)
+
+
+🛠️ Esqueleto e Lógica Módulos da Interface
+1. D:\assistant\voxel\main\center_under_construction.py
+(Tela inicial temporária padronizada)
+
+=================================( center_under_construction.py
+OBJETIVO:
+Exibir um painel amigável informando "Under Construction" (Em Construção) como tela inicial do sistema.
+
+ESTRUTURA LÓGICA:
+1. Renderizar título centralizado "VOXEL System - Under Construction".
+2. Exibir mensagem informativa e status do sistema.
+3. Disponibilizar botão de atalho para navegar até a tela do Assistente.
+
+2. D:\assistant\voxel\main\main_header.py
+(Barra de Navegação Superior)
+
+=================================( main_header.py
+OBJETIVO:
+Navegação mestre no topo da aplicação.
+
+ESTRUTURA LÓGICA:
+1. Botão "Início":
+   - Aciona a troca no `main_center.py` para carregar `center_under_construction.py`.
+2. Botão "Assistente":
+   - Aciona a troca no `main_center.py` para carregar `center_assistant.py`.
+3. Exibição de logo e status rápido da sessão.
+
+
+
+3. D:\assistant\voxel\main\main_footer.py
+(Rodapé Global do Sistema)
+
+
+=================================( main_footer.py
+OBJETIVO:
+Exibir informações de status globais e logs rápidos no rodapé.
+
+ESTRUTURA LÓGICA:
+1. Exibir versão do sistema (ex: "v1.0.0").
+2. Exibir status da conexão com a internet (para IA Online).
+3. Exibir nome do usuário ativo (carregado via `DatabaseManager.get_active_user()`).
+
+
+4. D:\assistant\voxel\main\main_center.py
+(Roteador/Container Central do Sistema)
+
+
+=================================( main_center.py
+OBJETIVO:
+Gerenciar a alternância dinâmica entre a tela "Início" (Under Construction) e a tela "Assistente" (center_assistant.py).
+
+ESTRUTURA LÓGICA:
+1. Inicializar com a tela padrão: `CenterUnderConstruction`.
+2. Método `switch_screen(screen_name)`:
+   - Se screen_name == "home" -> carrega `center_under_construction.py`.
+   - Se screen_name == "assistant" -> carrega `center_assistant.py`.
+
+5. D:\assistant\voxel\main\center_assistant.py
+(Container Principal da Funcionalidade Assistente)
+
+
+=================================( center_assistant.py
+OBJETIVO:
+Organizar os 3 componentes visuais do Assistente: Model Main Screen, Model Right Bar e Model Bottom Bar.
+
+ESTRUTURA LÓGICA:
+1. Instanciar `ModelMainScreen` (área central mutável).
+2. Instanciar `ModelRightBar` (painel lateral de atalhos/status).
+3. Instanciar `ModelBottomBar` (barra de navegação entre as 4 sub-telas).
+4. Conectar os eventos de clique da `ModelBottomBar` para alterar a view exibida na `ModelMainScreen`.
+
+6. Sub-telas de Configuração (config/*.py)
+Conectadas diretamente ao database_general.json via DatabaseManager.
+
+config_general.py:
+
+Lê e altera status_chatbot ("Assistente", "Inteligência Artificial", "Ambos"), status_ia, user_entrada, chatbot_saida, keyword_master, etc.
+
+config_audio_input.py:
+
+Exibe e permite alterar configuracao_microfone (motor_reconhecimento, threshold_volume, tempo_silencio, dispositivo_entrada).
+
+config_audio_output.py:
+
+Exibe e permite alterar configuracao_voz (motor_principal, rate_pyttsx3, volume_voz, genero_voz).
+
+config_local_ai.py:
+
+Exibe e permite alterar configuracao_ia_local (modelo_padrao, temperatura, max_tokens, max_historico).
+
+config_online_ai.py:
+
+Exibe e permite alterar configuracao_ia_online (provedor, api_key, modelo_online, timeout_requisicao).
+
+7. Sub-telas de Banco de Dados (tb_user, tb_comando, tb_condicao)
+Conectadas ao db_virtual_assistant.db via DatabaseManager.
+
+screen_user.py:
+
+Formulário CRUD para consultar e atualizar o perfil do usuário ativo na tabela tb_user.
+
+command_registration.py:
+
+Interface para cadastrar/editar os comandos do sistema na tabela tb_comando.
+
+conditional_registration.py:
+
+Interface para associar condições, perguntas e caminhos de arquivos na tabela tb_condicao.
+
+8. Sub-tela do Chatbot (chatbot/*.py)
+chatbot_left.py:
+
+Consulta a tabela tb_chat do SQLite.
+
+Lista o histórico de conversas agrupado por data e título.
+
+Permite criar uma nova conversa (create_chat_session).
+
+chatbot_center.py:
+
+Interface visual de bate-papo.
+
+Instancia o config_chatbot.py (orquestrador).
+
+Exibe mensagens formatadas com Data, Hora e Proprietário ([tb_user_username] ou Assistente VOXEL / IA Online / IA Local).
+
+Grava automaticamente o log no caminho:
+D:/assistant/voxel/arquivos/[tb_user_username]/log/[YYYY-MM-DD]_chat_[tb_chat_id].txt
+
+chatbot_right.py:
+
+Exibe o status em tempo real do processamento (se o microfone está escutando, se a IA está processando ou se o assistente está sintetizando voz).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,49 @@
+=================================( command_weather_full.py
+Comando para informar o clima completo como um boletim meteorológico
+
+PASSO 1 - Pega a hora atual [hour]
+PASSO 2 - Pega a data de hoje [date] (formato: dia da semana, dia/mês/ano)
+PASSO 3 - Pega o dia da semana [weekday]
+
+PASSO 4 - Abre o arquivo D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+e coleta as informações na tabela tb_user:
+[tb_user_salutation] = tratamento do usuário (Sr., Sra., etc)
+[tb_user_first_name] = primeiro nome do usuário
+[tb_user_city] = cidade do usuário
+[tb_user_state] = estado do usuário
+
+PASSO 5 - Consulta o clima completo para [tb_user_city], [tb_user_state]
+e pega as informações:
+[temperature] = temperatura atual
+[temperature_feels] = sensação térmica
+[temperature_min] = temperatura mínima do dia
+[temperature_max] = temperatura máxima do dia
+[weather_condition] = condição do tempo (ensolarado, nublado, chuvoso, etc)
+[humidity] = umidade do ar em porcentagem
+[wind_speed] = velocidade do vento em km/h
+[wind_direction] = direção do vento (norte, sul, leste, oeste)
+[uv_index] = índice de raios UV
+[visibility] = visibilidade em km
+[sunrise] = horário do nascer do sol
+[sunset] = horário do pôr do sol
+
+PASSO 6 - Monta a resposta no estilo jornalístico:
+"Bom dia [tb_user_salutation] [tb_user_first_name]! Agora são [hour] do dia [date].
+Boletim meteorológico para [tb_user_city]-[tb_user_state]:
+
+O dia está [weather_condition], com temperatura atual de [temperature]°C.
+A sensação térmica é de [temperature_feels]°C.
+A máxima hoje chega a [temperature_max]°C e a mínima foi de [temperature_min]°C.
+Umidade do ar em [humidity]%, com ventos de [wind_speed] km/h na direção [wind_direction].
+Índice UV está em [uv_index] e visibilidade de [visibility] km.
+O sol nasceu às [sunrise] e vai se pôr às [sunset]."
+
+PASSO 7 - Adiciona dicas baseado nas condições:
+Se [humidity] for muito baixa (abaixo de 30%):
+    adiciona "Atenção: Umidade do ar está baixa, beba bastante água!"
+Se [uv_index] for alto (acima de 8):
+    adiciona "Cuidado: Índice UV está alto, use protetor solar!"
+Se [temperature] estiver muito alta (acima de 35°C):
+    adiciona "Alerta de calor intenso, evite exposição ao sol entre 10h e 16h!"
+
+PASSO 8 - Mostra a resposta final completa com todas as informações e alertas

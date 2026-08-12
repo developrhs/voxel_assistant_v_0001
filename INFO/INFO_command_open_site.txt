@@ -1,0 +1,17 @@
+=================================( command_open_site.py
+Comando para abrir sites diretamente
+
+PASSO 1 - Quando chamado, recebe uma palavra-chave
+Exemplo: "abrir gemini"
+
+PASSO 2 - Conecta ao banco de dados D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+
+PASSO 3 - Procura na tabela tb_condition onde [tb_condition_key] é igual à palavra-chave recebida
+
+PASSO 4 - Pega a URL cadastrada no campo [tb_condition_file]
+Exemplo: "https://gemini.google.com"
+
+PASSO 5 - Abre o navegador padrão com a URL recuperada do banco de dados
+
+PASSO 6 - Mostra a mensagem da coluna [tb_condition_response] que está na tabela:
+Exemplo: "Abrindo Gemini"

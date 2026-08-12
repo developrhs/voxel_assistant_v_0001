@@ -1,0 +1,26 @@
+=================================( command_search_google.py
+Comando para pesquisar no Google
+
+PASSO 1 - Quando chamado, recebe uma palavra-chave
+Exemplo: "pesquisar no google"
+
+PASSO 2 - Conecta ao banco de dados D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+
+PASSO 3 - Procura na tabela tb_condition onde [tb_condition_key] é igual à palavra-chave recebida
+
+PASSO 4 - O assistente pega o texto da coluna [tb_condition_question] e FALA para o usuário:
+Exemplo: "O que você deseja pesquisar no Google?"
+
+PASSO 5 - O assistente aguarda e capta a resposta do usuário como termo de busca [search_term]
+
+PASSO 6 - Define a URL base do serviço de pesquisa:
+Exemplo: "https://www.google.com/search?q="
+
+PASSO 7 - Junta a URL base + [search_term]
+Substitui espaços por "+"
+Exemplo: "https://www.google.com/search?q=como+fazer+bolo"
+
+PASSO 8 - Abre o navegador padrão com a URL montada
+
+PASSO 9 - Mostra a mensagem da coluna [tb_condition_response] que está na tabela:
+Exemplo: "Pesquisando [search_term] no Google"

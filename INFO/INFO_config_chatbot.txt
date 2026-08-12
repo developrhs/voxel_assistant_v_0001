@@ -1,0 +1,183 @@
+=================================( config_chatbot.py
+Orquestrador Central e Motor do Chatbot/Assistente Virtual VOXEL
+
+OBJETIVO PRINCIPAL:
+1. Aglutinar todos os módulos de configuração, IA, áudio e banco de dados.
+2. Executar inicialização tolerante a falhas (não impede o sistema de subir se IAs falharem).
+3. Escanear modelos de IA Local instalados na máquina e gerenciar perfis/preferências.
+4. Processar entradas e saídas de acordo com os modos ("Text", "Voice", "Both", "Assistant", "Artificial Intelligence").
+5. Executar a regra de decisão e encadeamento: Assistente -> IA Online -> IA Local -> Mensagens de Erro.
+6. Gerenciar o histórico de conversação visual e gravar os logs diários por usuário.
+
+
+================================= 1. INICIALIZAÇÃO DA APLICAÇÃO (BOOTSTROPPING & RESILIÊNCIA)
+
+AO CARREGAR O CONFIG_CHATBOT.PY:
+
+PASSO 1.1 - CARREGAMENTO DE BANCO E MÓDULOS DE CONFIGURAÇÃO:
+    - Instancia o `database_manager.py` e conecta ao `database_general.json` e ao `db_virtual_assistant.db`.
+    - Carrega dados do usuário ativo da tabela `tb_user` ([tb_user_username], [tb_user_salutation], [tb_user_first_name]).
+    - Instancia os módulos: `AudioInputConfig`, `AudioOutputConfig`, `AssistantConfig`.
+
+PASSO 1.2 - ESCANEMENTO E VERIFICAÇÃO DA IA LOCAL (FALLBACK SILENCIOSO):
+    - Chama o módulo `config_local_ai.py` para realizar um ESCANEAMENTO NO SISTEMA:
+        * Identifica quais motores/modelos locais estão instalados na máquina (ex: Ollama, Llama.cpp, mistral, llama3, etc.).
+        * Compara com o perfil ativo salvo.
+        * SE houver um novo modelo detectado e nenhum definido: pergunta ao usuário se deseja configurá-lo como IA Local Preferencial.
+    - SE a IA Local falhar, não estiver rodando ou não tiver modelo instalado:
+        * Registra flag interna: `[is_local_ai_ready] = false`
+        * EMITA UM ALERTA NO CONSOLE / LOG DE INICIALIZAÇÃO, mas NÃO INTERROMPE a subida do sistema.
+
+PASSO 1.3 - VERIFICAÇÃO DA IA ONLINE (FALLBACK SILENCIOSO):
+    - Chama o módulo `config_online_ai.py` para validar conexão com a internet e checar as chaves de API.
+    - SE as chaves estiverem vazias/inválidas ou não houver conexão:
+        * Registra flag interna: `[is_online_ai_ready] = false`
+        * EMITA UM ALERTA NO CONSOLE / LOG DE INICIALIZAÇÃO, mas NÃO INTERROMPE a subida do sistema.
+
+PASSO 1.4 - CRIAÇÃO DA SESSÃO E ARQUIVO DE LOG:
+    - Gera ou recupera o ID da sessão de conversa atual: `[tb_chat_id]`.
+    - Garante a existência do diretório de log do usuário:
+      `D:/assistant/voxel/arquivos/[tb_user_username]/log/`
+    - Define o caminho do arquivo de log diário:
+      `D:/assistant/voxel/arquivos/[tb_user_username]/log/[YYYY-MM-DD]_chat_[tb_chat_id].txt`
+
+
+================================= 2. REGRAS DE CAPTURA DE ENTRADA (USER_INPUT)
+
+MÉTODO capture_user_input():
+PASSO 2.1 - Consulta no `database_general.json` o campo `user_input.selected`:
+
+    - SE `selected` == "Keyboard":
+        * Aguarda a digitação do usuário no terminal/interface gráfica.
+        * Retorna o texto digitado.
+
+    - SE `selected` == "Voice":
+        * Mantém o microfone ativado via `AudioInputConfig`.
+        * Transforma a voz capturada em texto para processamento interno e registro de log.
+        * NÃO imprime o texto capturado na tela do usuário.
+        * Retorna o texto transcrito.
+
+    - SE `selected` == "Both":
+        * Permite digitação e mantém escuta ativa do microfone simultaneamente.
+        * Exibe na tela o texto digitado OU a transcrição da fala do usuário.
+        * Retorna o texto obtido.
+
+
+================================= 3. NÚCLEO DE DECISÃO E PROCESSAMENTO DE MENSAGENS (PROCESS_MESSAGE)
+
+MÉTODO process_message(prompt_texto):
+PASSO 3.1 - REGISTRA A ENTRADA NO LOG E TELA:
+    - Coleta Data/Hora Atual no formato: `DD/MM/YYYY - HH:MM:SS`.
+    - Formata o cabeçalho do usuário:
+      `------------------------------------------------------------------`
+      `[DD/MM/YYYY - HH:MM:SS] - [tb_user_username]`
+      `[prompt_texto]`
+    - Envia para o gravador de log (PASSO 5) e exibe na tela (se a configuração permitir).
+
+PASSO 3.2 - AVALIAÇÃO DO MODO DO CHATBOT (`status_chatbot.selected`):
+
+    ------------------------------------------------------------------
+    OPÇÃO A: `status_chatbot.selected` == "Assistant" (Apenas Comandos)
+    ------------------------------------------------------------------
+    - Envia `prompt_texto` para `config_assistant.py`.
+    - SE encontrar comando correspondente no `db_virtual_assistant.db`:
+        * Executa o script do comando (Exemplo: `command_greeting.py`).
+        * Retorna a resposta gerada pelo comando (ex: "Boa tarde senhor Rodrigo são 10:58.").
+        * emissor = "Assistente VOXEL"
+    - SE NÃO encontrar comando:
+        * Retorna: "Desculpe, comando não reconhecido. O modo Inteligência Artificial está desativado."
+
+    ------------------------------------------------------------------
+    OPÇÃO B: `status_chatbot.selected` == "Artificial Intelligence" (Apenas IA)
+    ------------------------------------------------------------------
+    - Ignora a busca por comandos locais e envia a solicitação diretamente para o fluxo de IA (PASSO 3.3).
+
+    ------------------------------------------------------------------
+    OPÇÃO C: `status_chatbot.selected` == "Both" (Assistente + IA)
+    ------------------------------------------------------------------
+    - PASSO C.1: Tenta primeiro executar como COMANDO via `config_assistant.py`.
+    - SE o assistente identificar um comando (ex: "Chat abrir meus documentos" ou "Chat bom dia"):
+        * Executa o comando.
+        * Define a resposta do assistente e emissor = "Assistente VOXEL".
+        * NÃO envia o prompt para a IA.
+    - SE o assistente NÃO identificar nenhum comando (ex: "quanto é 4 mais quatro"):
+        * Encaminha o `prompt_texto` automaticamente para o fluxo de IA (PASSO 3.3).
+
+
+PASSO 3.3 - SUBFLUXO DE DECISÃO DE IA (`status_ai.selected`):
+
+    - SE `status_ai.selected` == "Online AI":
+        * SE `[is_online_ai_ready]` == true:
+            - Chama `config_online_ai.py` e obtém a resposta.
+            - emissor = "IA Online [nome_modelo_online]"
+        * SENÃO:
+            - Resposta = "Online IA configurações incorretas"
+
+    - SE `status_ai.selected` == "Offline AI":
+        * SE `[is_local_ai_ready]` == true:
+            - Chama `config_local_ai.py` e obtém a resposta.
+            - emissor = "IA Local [nome_modelo_local]"
+        * SENÃO:
+            - Resposta = "Offline IA configurações incorretas"
+
+    - SE `status_ai.selected` == "Both" (Fallback Dinâmico):
+        * PASSO 1: Tenta executar via IA Online.
+        * SE a IA Online responder com sucesso:
+            - Resposta = texto retornado.
+            - emissor = "IA Online [nome_modelo_online]"
+        * SE a IA Online falhar (sem internet, erro de API ou tempo esgotado):
+            - Tenta executar via IA Local (`config_local_ai.py`).
+            - SE a IA Local responder com sucesso:
+                * Resposta = texto retornado.
+                * emissor = "IA Local [nome_modelo_local]"
+            - SE A IA LOCAL TAMBÉM FALHAR:
+                * Resposta = "Online IA configurações incorretas\nOffline IA configurações incorretas"
+
+
+================================= 4. REGRAS DE EXIBIÇÃO E SAÍDA DE RESPOSTA (CHATBOT_OUTPUT)
+
+MÉTODO send_response_output(emissor, resposta_texto):
+PASSO 4.1 - FORMATAR BLOCO DE RESPOSTA PARA REGISTRO/TELA:
+    - Coleta Data/Hora Atual (`DD/MM/YYYY - HH:MM:SS`).
+    - Monta o texto de saída:
+      `------------------------------------------------------------------`
+      `[DD/MM/YYYY - HH:MM:SS] - [emissor]`
+      `[resposta_texto]`
+
+PASSO 4.2 - GRAVA A RESPOSTA NO ARQUIVO DE LOG (PASSO 5).
+
+PASSO 4.3 - APLICA A REGRA DO `chatbot_output.selected`:
+
+    - SE `selected` == "Text":
+        * Exibe (print) a resposta formatada na tela/terminal.
+        * Não emite som.
+
+    - SE `selected` == "Voice":
+        * Não imprime o texto da resposta na tela para o usuário ver.
+        * Envia `resposta_texto` para o `AudioOutputConfig` realizar a conversão Text-to-Speech (falar).
+
+    - SE `selected` == "Both":
+        * Exibe (print) a resposta formatada na tela.
+        * Envia `resposta_texto` para o `AudioOutputConfig` ler a resposta em voz alta.
+
+
+================================= 5. GERENCIADOR DE LOGS DIÁRIOS E PERSISTÊNCIA
+
+MÉTODO write_to_daily_log(conteudo_formatado):
+PASSO 5.1 - Abre o arquivo no modo de adição (append):
+    `D:/assistant/voxel/arquivos/[tb_user_username]/log/[YYYY-MM-DD]_chat_[tb_chat_id].txt`
+PASSO 5.2 - Escreve o `conteudo_formatado` garantindo a inclusão das linhas divisórias, data, hora e proprietário da mensagem.
+PASSO 5.3 - Fecha com segurança o ponteiro do arquivo log.
+
+
+================================= 6. CICLO DE EXECUÇÃO PRINCIPAL (MAIN LOOP)
+
+MÉTODO start_chat_session():
+PASSO 6.1 - Exibe mensagem de início e saúda o usuário baseado no perfil ativo.
+PASSO 6.2 - ENTRADA NO LOOP CONTÍNUO:
+    - `prompt` = capture_user_input()
+    - SE `prompt` contiver comando de encerramento (ex: "Sair", "Encerrar chat"):
+        * Registra encerramento no log.
+        * Interrompe o loop.
+    - Chama `process_message(prompt)`.
+    - Mantém o loop aguardando a próxima interação do usuário.

@@ -1,0 +1,87 @@
+=================================( config_online_ai.py
+Arquivo responsável por gerenciar a conexão, chaves de API, requisições de rede
+e histórico de conversas com provedores de Inteligência Artificial em nuvem (Online).
+
+OBJETIVO PRINCIPAL:
+Classe/módulo responsável por:
+1. Carregar os parâmetros da IA online do arquivo /config/database/database_general.json
+2. Validar o status da conexão com a internet e a autenticação das Chaves de API (API Keys)
+3. Inicializar e alternar entre os provedores de nuvem (Gemini, OpenAI, Claude, Groq)
+4. Enviar prompts via API REST/SDKs oficiais e receber respostas em tempo real
+5. Gerenciar parâmetros de geração (temperatura, max_tokens) e a memória de contexto
+
+
+================================= 1. INICIALIZAÇÃO E CARREGAMENTO DE CONFIGURAÇÕES
+
+AO INICIAR A CLASSE ONLINEAICONFIG:
+PASSO 1.1 - Conecta ao arquivo D:/assistant/voxel/config/database/database_general.json
+PASSO 1.2 - Lê e armazena em memória os parâmetros da chave [online_ai_config]:
+    - [default_provider] (provedor ativo: "google_gemini", "openai", "claude", "groq")
+    - [api_keys] (dicionário/chaves com as API keys de cada provedor)
+    - [temperature] (criatividade da resposta, ex: 0.7)
+    - [max_tokens] (limite de tamanho da resposta, ex: "1000")
+    - [timeout] (tempo limite de espera pela resposta em segundos, ex: 10)
+    - [use_history] (booleano: se mantém contexto da conversa na nuvem)
+    - [max_history] (quantidade máxima de mensagens no histórico, ex: "20")
+    - [fallback_to_local] (booleano: se deve tentar IA local caso a internet caia)
+
+
+================================= 2. VALIDAÇÃO DE CONEXÃO E API KEYS
+
+MÉTODO validate_connection_and_keys():
+PASSO 2.1 - Testa a conectividade com a internet através de um ping/módulo de socket rápido.
+PASSO 2.2 - SE não houver internet:
+    - Retorna status: "NO_INTERNET_CONNECTION"
+PASSO 2.3 - SE houver internet:
+    - Obtém a chave de API do provedor ativo em [api_keys][default_provider]
+    - SE a chave estiver vazia ou nula:
+        * Tenta alternar para outro provedor em [online_ai_config] que possua chave cadastrada
+        * Se nenhum tiver chave: retorna status: "MISSING_API_KEY"
+    - Retorna status: "READY"
+
+
+================================= 3. FLUXO DE REQUISIÇÃO PARA O PROVEDOR EM NUVEM
+
+MÉTODO generate_response(prompt_texto):
+PASSO 3.1 - RECEBIMENTO DO PROMPT E VERIFICAÇÃO DE PRÉ-REQUISITOS:
+    - Recebe o prompt do usuário via chatbot.
+    - Executa o MÉTODO validate_connection_and_keys().
+    - SE o status não for "READY":
+        * Retorna erro para o config_chatbot.py tomar a decisão de fallback (ex: redirecionar para IA Local).
+
+PASSO 3.2 - MONTAGEM DO PAYLOAD / REQUISIÇÃO DA API:
+    - Seleciona o conector correspondente a [default_provider]:
+
+    - SE [default_provider] == "google_gemini":
+        * Monta o SDK/endpoint da API do Gemini usando a chave [api_keys]["google_gemini"]
+        * Configura temperatura = [temperature] e limite = [max_tokens]
+
+    - SE [default_provider] == "openai":
+        * Monta a requisição para a API da OpenAI (GPT) usando a chave configurada
+
+    - SE [default_provider] == "groq" / outros:
+        * Envia a requisição para o respectivo endpoint REST/SDK
+
+PASSO 3.3 - TRATAMENTO DE HISTÓRICO (CHAT CONTEXT):
+    - SE [use_history] == true:
+        * Anexa a lista das últimas [max_history] mensagens enviadas/recebidas para manter a continuidade da conversa.
+
+PASSO 3.4 - EXECUÇÃO E REPOUSA COM TIMEOUT:
+    - Dispara a requisição assíncrona/síncrona para a nuvem respeitando o [timeout].
+    - SE a requisição demorar mais que o tempo de [timeout]:
+        * Interrompe a chamada e retorna erro: "ONLINE_AI_TIMEOUT".
+
+PASSO 3.5 - PROCESSAMENTO DA RESPOSTA:
+    - Coleta o texto retornado pelo modelo em nuvem.
+    - Atualiza a lista interna de histórico de mensagens.
+    - Retorna a string final limpa e formatada.
+
+
+================================= 4. MÉTODOS DE CONTROLE EXPOSTOS
+
+A classe expõe os seguintes métodos externos:
+- get_online_response(prompt): Método principal para consultar a IA na nuvem.
+- check_online_status(): Verifica instantaneamente se a internet e a API Key ativa estão funcionando.
+- set_active_provider(provider_name): Permite trocar o provedor principal em tempo de execução (ex: trocar de Gemini para OpenAI).
+- clear_history(): Limpa o histórico de contexto mantido na nuvem.
+- update_settings(): Recarrega os parâmetros do arquivo database_general.json.

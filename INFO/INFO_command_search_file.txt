@@ -1,0 +1,101 @@
+=================================( command_search_file.py
+Comando para pesquisar e navegar por arquivos e pastas no computador
+
+PASSO 1 - Quando chamado, recebe uma palavra-chave
+Exemplo: "pesquisar arquivo no computador"
+
+PASSO 2 - Conecta ao banco de dados D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+
+PASSO 3 - Procura na tabela tb_condition onde [tb_condition_key] é igual à palavra-chave recebida e na tabela tb_user para obter dados do usuário
+
+PASSO 4 - Detecta no sistema a lista de diretórios disponíveis [available_drives]
+Exemplo: ["C:", "D:", "E:"]
+
+PASSO 5 - O assistente pega as informações da tabela tb_user ([tb_user_salutation], [tb_user_first_name]) e pergunta:
+"[tb_user_salutation] [tb_user_first_name], em qual diretório deseja procurar?"
+E lista as opções:
+"1. Diretório C:"
+"2. Diretório D:"
+"3. Diretório E:"
+
+PASSO 6 - Usuário responde falando o número ou a letra do diretório
+Exemplo: "2" ou "Diretório D"
+
+PASSO 7 - O assistente confirma: "Certo, vamos procurar no Diretório [letra_escolhida]:"
+E pergunta: "Você deseja abrir a pasta ou listar os arquivos?"
+Opções:
+"1. Abrir pasta"
+"2. Listar arquivos"
+
+PASSO 8 - SE usuário escolher "Abrir pasta":
+    PASSO 8.1 - Abre o diretório escolhido no Explorer
+    PASSO 8.2 - Mostra a mensagem da coluna [tb_condition_response]: "Abrindo Diretório [letra_escolhida]:"
+    PASSO 8.3 - FIM
+
+PASSO 9 - SE usuário escolher "Listar arquivos":
+    PASSO 9.1 - Lê todo o conteúdo do diretório escolhido
+    PASSO 9.2 - Separa em duas listas:
+        [folder_list] = lista de pastas
+        [file_list] = lista de arquivos
+    
+    PASSO 9.3 - Numera todas as pastas primeiro, depois os arquivos
+    Exemplo:
+    "Pastas:"
+    "1. dados"
+    "2. fotos"
+    "3. musicas"
+    "Arquivos:"
+    "4. lista de compras.txt"
+    "5. documento.docx"
+    "6. planilha.xlsx"
+
+    PASSO 9.4 - O assistente fala:
+    "[tb_user_salutation] [tb_user_first_name], no Diretório [letra_escolhida]: temos:"
+    E lista todos os itens numerados
+
+    PASSO 9.5 - O assistente pergunta:
+    "O que deseja fazer?"
+    "1. Abrir pasta ou arquivo (fale o número ou nome)"
+    "2. Parar e abrir esta pasta no Explorer"
+    "3. Cancelar"
+
+PASSO 10 - SE usuário escolher "Parar e abrir esta pasta no Explorer":
+    PASSO 10.1 - Abre o diretório atual no Explorer
+    PASSO 10.2 - Mostra a mensagem da coluna [tb_condition_response]: "Abrindo [caminho_atual]"
+    PASSO 10.3 - FIM
+
+PASSO 11 - SE usuário escolher "Cancelar":
+    PASSO 11.1 - Mostra a mensagem da coluna [tb_condition_response]: "Busca cancelada"
+    PASSO 11.2 - FIM
+
+PASSO 12 - SE usuário falar o número ou nome de uma pasta:
+    PASSO 12.1 - Identifica se é pasta pelo número ou nome
+    
+    PASSO 12.2 - Monta o novo caminho:
+    [caminho_atual] = [caminho_atual] + "/" + [nome_da_pasta]
+    Exemplo: "D:/dados"
+
+    PASSO 12.3 - Volta para o PASSO 7 com o novo [caminho_atual]
+    (Abre a pasta e pergunta novamente se quer abrir ou listar)
+
+PASSO 13 - SE usuário falar o número ou nome de um arquivo:
+    PASSO 13.1 - Identifica se é arquivo pelo número ou nome
+    
+    PASSO 13.2 - Monta o caminho completo do arquivo:
+    [caminho_arquivo] = [caminho_atual] + "/" + [nome_do_arquivo]
+    Exemplo: "D:/foto.png"
+
+    PASSO 13.3 - Verifica se o arquivo tem um programa padrão associado
+    (arquivos .txt abrem com Bloco de Notas, .png com visualizador de fotos, etc)
+
+    PASSO 13.4 - Abre o arquivo com o programa padrão do sistema
+
+    PASSO 13.5 - Mostra a mensagem da coluna [tb_condition_response]: "Abrindo arquivo [nome_do_arquivo]"
+    
+    PASSO 13.6 - FIM
+
+PASSO 14 - Se em qualquer momento o usuário falar "Voltar":
+    PASSO 14.1 - Volta um nível na navegação de pastas
+    Exemplo: de "D:/dados/fotos" volta para "D:/dados"
+    
+    PASSO 14.2 - Volta para o PASSO 7 com o [caminho_atual] anterior

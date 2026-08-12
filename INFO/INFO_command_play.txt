@@ -1,0 +1,13 @@
+=================================( command_play.py
+Comando para tocar músicas de uma pasta
+
+PASSO 1 - Quando chamado, recebe uma palavra-chave
+PASSO 2 - Conecta ao banco de dados D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+PASSO 3 - Procura na tabela tb_condition onde [tb_condition_key] é igual à palavra-chave recebida
+PASSO 4 - Pega o [tb_condition_file] correspondente (caminho da pasta com músicas)
+PASSO 5 - Verifica todos os arquivos de áudio na pasta:
+Formatos aceitos: .mp3, .wma, .wav, .flac, .aac, .ogg
+PASSO 6 - Abre o Windows Media Player com todos os arquivos encontrados
+PASSO 7 - Inicia a reprodução automaticamente
+PASSO 8 - Mostra a mensagem da coluna [tb_condition_response] que está na tabela
+Exemplo: "Tocando playlist Rock"

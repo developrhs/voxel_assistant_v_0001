@@ -1,0 +1,389 @@
+VOXEL - Virtual Assistant
+Sistema Operacional - Windows 10 Pro 64X
+Linguagem: Python 3.14.7
+
+Informações do Desenvolvedor:
+tb_user_id = 1
+tb_user_salutation = senhor
+tb_user_first_name = Rodrigo
+tb_user_last_name = Honório da Silva
+tb_user_username = honorio.rhs
+tb_user_nationality = Brasileiro
+tb_user_place_of_birth = São Paulo-SP
+tb_user_city = Rio Quente
+tb_user_state = GO
+tb_user_email = honorio.rhs@gmail.com
+tb_user_whatsapp = (64) 99272-0965
+tb_user_status = active
+
+Estrutura de pastas:
+
+D:\assistant\voxel\INFO.txt
+D:\assistant\voxel\main.py
+D:\assistant\voxel\files\[tb_user_username]\log\2026-08-12_chat_[tb_chat_id].txt
+D:\assistant\voxel\config\config_assistant.py
+D:\assistant\voxel\config\config_audio_input.py
+D:\assistant\voxel\config\config_audio_output.py
+D:\assistant\voxel\config\config_local_ai.py
+D:\assistant\voxel\config\config_online_ai.py
+D:\assistant\voxel\config\config_status.py
+D:\assistant\voxel\config\database_manager.py
+
+D:\assistant\voxel\config\command\command_play.py
+D:\assistant\voxel\config\command\command_weather.py
+D:\assistant\voxel\config\command\command_weather_full.py
+D:\assistant\voxel\config\command\command_greeting.py
+D:\assistant\voxel\config\command\command_mode_office.py
+D:\assistant\voxel\config\command\command_open
+D:\assistant\voxel\config\command\command_open_site.py
+D:\assistant\voxel\config\command\command_run.py
+D:\assistant\voxel\config\command\command_search_google.py
+D:\assistant\voxel\config\command\command_search_file.py
+D:\assistant\voxel\config\command\command_search_maps.py
+D:\assistant\voxel\config\command\command_search_wikipedia.py
+D:\assistant\voxel\config\command\command_search_youtube.py
+
+D:\assistant\voxel\config\database\database_general.json
+
+D:\assistant\voxel\config\database\db\db_virtual_assistant.db
+D:\assistant\voxel\main\main_center.py
+D:\assistant\voxel\main\main_footer.py
+D:\assistant\voxel\main\main_header.py
+D:\assistant\voxel\main\model\model_bottom_bar.py
+D:\assistant\voxel\main\model\model_main_screen.py
+D:\assistant\voxel\main\model\model_right_bar.py
+D:\assistant\voxel\main\model\main_screen\screen_chatbot.py
+D:\assistant\voxel\main\model\main_screen\screen_command.py
+D:\assistant\voxel\main\model\main_screen\screen_config.py
+D:\assistant\voxel\main\model\main_screen\screen_user.py
+D:\assistant\voxel\main\model\main_screen\chatbot\chatbot_center.py
+D:\assistant\voxel\main\model\main_screen\chatbot\chatbot_left.py
+D:\assistant\voxel\main\model\main_screen\chatbot\chatbot_right.py
+D:\assistant\voxel\main\model\main_screen\command\command_registration.py
+D:\assistant\voxel\main\model\main_screen\command\conditional_registration.py
+D:\assistant\voxel\main\model\main_screen\config\config_local_ai.py
+D:\assistant\voxel\main\model\main_screen\config\config_online_ai.py
+D:\assistant\voxel\main\model\main_screen\config\config_audio_input.py
+D:\assistant\voxel\main\model\main_screen\config\config_audio_output.py
+D:\assistant\voxel\main\model\main_screen\config\config_general.py
+
+D:\assistant\voxel\venv\
+
+
+
+
+
+
+
+
+D:\assistant\voxel\config\database\db\db_virtual_assistant.db
+table: tb_user
+tb_user_id
+tb_user_salutation
+tb_user_first_name
+tb_user_last_name
+tb_user_username
+tb_user_nationality
+tb_user_place_of_birth
+tb_user_city
+tb_user_state
+tb_user_email
+tb_user_whatsapp
+tb_user_status
+
+table: tb_command
+tb_command_id
+tb_command_key
+tb_command_file
+tb_command_response
+tb_command_status
+
+table: tb_condition
+tb_condition_id
+tb_condition_tb_command_id
+tb_condition_key
+tb_condition_question
+tb_condition_file
+tb_condition_response
+tb_condition_status
+
+table: tb_chat
+tb_chat_id
+tb_chat_tb_user_id
+tb_chat_title
+tb_chat_create_date
+tb_chat_create_time
+tb_chat_modify_date
+tb_chat_modify_time
+tb_chat_log_text
+
+
+D:\assistant\voxel\config\database\database_general.json
+{
+    "_comment": "General System Settings - Voxel Assistant",
+    "_version": "1.0.0",
+    "_last_modified": "2026-08-12 03:26:35",
+    "keyword_status": true,
+    "keyword_master": "Chat",
+    "awaiting_duration_status": true,
+    "awaiting_duration": "120s",
+    "waiting_id_command": 5,
+    "chatbot_output": {
+        "options": [
+            "Text",
+            "Voice",
+            "Both"
+        ],
+        "selected": "Both"
+    },
+    "user_input": {
+        "options": [
+            "Keyboard",
+            "Voice",
+            "Both"
+        ],
+        "selected": "Both"
+    },
+    "status_chatbot": {
+        "options": [
+            "Assistant",
+            "Artificial Intelligence",
+            "Both"
+        ],
+        "selected": "Assistant"
+    },
+    "status_ai": {
+        "options": [
+            "Online AI",
+            "Offline AI",
+            "Both"
+        ],
+        "selected": "Offline AI"
+    },
+    "language": "en-US",
+    "system_preferences": {
+        "start_with_windows": false,
+        "minimize_to_tray": true,
+        "theme": "light",
+        "theme_options": [
+            "dark",
+            "light",
+            "system"
+        ],
+        "font_size": "12",
+        "font_size_options": [
+            10,
+            11,
+            12,
+            14,
+            16,
+            18
+        ],
+        "notifications": true,
+        "notification_sound": true,
+        "auto_start_chat": false,
+        "interface_language": "en-US",
+        "language_options": [
+            "pt-BR",
+            "en-US",
+            "es-ES"
+        ]
+    },
+    "microphone_config": {
+        "input_device": null,
+        "input_device_options": [],
+        "samplerate": "44100",
+        "samplerate_options": [
+            16000,
+            22050,
+            44100,
+            48000
+        ],
+        "channels": "1",
+        "channels_options": [
+            1,
+            2
+        ],
+        "blocksize": "512",
+        "blocksize_options": [
+            256,
+            512,
+            1024,
+            2048
+        ],
+        "threshold_volume": 0.05992857142857143,
+        "threshold_min": 0.001,
+        "threshold_max": 0.1,
+        "silence_time": "3.0",
+        "silence_time_options": [
+            1.0,
+            2.0,
+            3.0,
+            5.0,
+            10.0
+        ],
+        "max_speech_time": "20.0",
+        "speech_time_options": [
+            10,
+            20,
+            30,
+            60,
+            120
+        ],
+        "energy_threshold": 100.0,
+        "energy_min": 0,
+        "energy_max": 4000,
+        "dynamic_energy": true,
+        "recognition_engine": "azure",
+        "engine_options": [
+            "google",
+            "sphinx",
+            "wit",
+            "azure"
+        ],
+        "recognition_language": "en-US",
+        "language_options": [
+            "pt-BR",
+            "en-US",
+            "es-ES",
+            "fr-FR"
+        ],
+        "normalize_audio": true,
+        "remove_noise": false,
+        "microphone_gain": 1.0,
+        "gain_min": 0.5,
+        "gain_max": 3.0,
+        "calibration_profile": "normal",
+        "profile_options": [
+            "quiet",
+            "normal",
+            "noisy",
+            "very_noisy"
+        ]
+    },
+    "voice_config": {
+        "primary_engine": "google_tts",
+        "engine_options": [
+            "google_tts",
+            "pyttsx3",
+            "edge_tts"
+        ],
+        "fallback_engine": "pyttsx3",
+        "use_fallback": true,
+        "voice_language": "en",
+        "voice_language_options": [
+            "pt",
+            "en",
+            "es",
+            "fr"
+        ],
+        "accent": "com",
+        "accent_options": [
+            "com.br",
+            "pt",
+            "com",
+            "co.uk"
+        ],
+        "speech_speed": false,
+        "voice_gender": "female",
+        "gender_options": [
+            "female",
+            "male"
+        ],
+        "pyttsx3_rate": 150.0,
+        "rate_min": 50,
+        "rate_max": 400,
+        "voice_volume": 1.0,
+        "volume_min": 0.0,
+        "volume_max": 1.0,
+        "conversation_tone": "professional",
+        "tone_options": [
+            "professional",
+            "casual",
+            "friendly",
+            "formal",
+            "fun"
+        ],
+        "verbosity": "normal",
+        "verbosity_options": [
+            "minimal",
+            "normal",
+            "detailed"
+        ],
+        "confirm_commands": true,
+        "playback_library": "sounddevice",
+        "library_options": [
+            "sounddevice",
+            "pygame"
+        ],
+        "output_device": null,
+        "output_volume": 1.0,
+        "wait_for_audio_end": true
+    },
+    "local_ai_config": {
+        "default_model": "ollama",
+        "model_options": [
+            "echo",
+            "simple",
+            "gpt4all",
+            "llama_cpp",
+            "ollama",
+            "transformers"
+        ],
+        "temperature": 0.7,
+        "temperature_min": 0.0,
+        "temperature_max": 2.0,
+        "top_p": 0.9,
+        "top_p_min": 0.0,
+        "top_p_max": 1.0,
+        "max_tokens": "500",
+        "max_tokens_options": [
+            100,
+            250,
+            500,
+            1000,
+            2000
+        ],
+        "use_history": true,
+        "max_history": "50",
+        "max_history_options": [
+            10,
+            20,
+            50,
+            100
+        ],
+        "installed_model_info": "",
+        "auto_download_models": false
+    },
+    "online_ai_config": {
+        "provider": "none",
+        "provider_options": [
+            "none",
+            "openai",
+            "gemini",
+            "claude",
+            "deepseek",
+            "grok"
+        ],
+        "api_key": "",
+        "online_model": "gpt-3.5-turbo",
+        "online_model_options": [],
+        "custom_endpoint": "",
+        "use_proxy": false,
+        "proxy_url": "",
+        "request_timeout": "30",
+        "timeout_options": [
+            10,
+            15,
+            30,
+            60,
+            120
+        ],
+        "max_tokens_online": 1000,
+        "temperature_online": 0.7,
+        "save_history_online": true,
+        "local_fallback_mode": true
+    }
+}
+voxel_project_english.txt
+Exibindo voxel_project_english.txt.

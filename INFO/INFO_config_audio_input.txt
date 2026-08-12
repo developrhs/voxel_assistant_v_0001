@@ -1,0 +1,114 @@
+=================================( config_audio_input.py
+Arquivo responsável por gerenciar e capturar a entrada de áudio (microfone)
+e convertê-la em texto através do motor de reconhecimento configurado.
+
+OBJETIVO PRINCIPAL:
+Classe/módulo responsável por:
+1. Carregar as configurações de microfone e reconhecimento de voz do /config/database/database_general.json
+2. Listar e calibrar os dispositivos de entrada de áudio
+3. Capturar o sinal de áudio do microfone em tempo real (monitorando silêncio e limites de tempo)
+4. Processar o áudio capturado e enviar para o motor de reconhecimento (Azure, Google, SpeechRecognition, etc.)
+5. Retornar o texto reconhecido para o sistema principal
+
+
+================================= 1. INICIALIZAÇÃO E CARREGAMENTO DE CONFIGURAÇÕES
+
+AO INICIAR A CLASSE AUDIOINPUTCONFIG:
+PASSO 1.1 - Conecta ao arquivo D:/assistant/voxel/config/database/database_general.json
+PASSO 1.2 - Lê e armazena em memória os parâmetros da chave [microphone_config]:
+    - [input_device] (dispositivo selecionado / null para padrão)
+    - [samplerate] (frequência de amostragem, ex: 44100)
+    - [channels] (número de canais, ex: 1)
+    - [blocksize] (tamanho do bloco de áudio, ex: 512)
+    - [volume_threshold] (limiar de volume mínimo para captar fala)
+    - [silence_time] (tempo em segundos de silêncio para encerrar a escuta, ex: 3.0)
+    - [max_speech_time] (tempo máximo em segundos de uma fala, ex: 20.0)
+    - [recognition_engine] (motor utilizado, ex: "azure", "google", "sphinx", "wit")
+    - [recognition_language] (idioma do reconhecimento, ex: "en-US" ou "pt-BR")
+    - [normalize_audio] (booleano: normalização de volume)
+    - [remove_noise] (booleano: filtro de ruído)
+    - [microphone_gain] (ganho/multiplicador de volume)
+    - [calibration_profile] (perfil: "quiet", "normal", "noisy", "very_noisy")
+
+
+================================= 2. GERENCIAMENTO DE DISPOSITIVOS E CALIBRAGEM
+
+MÉTODO get_available_microphones():
+PASSO 2.1 - Consulta os dispositivos de entrada do sistema operacional
+PASSO 2.2 - Atualiza a lista em [input_device_options] no JSON e retorna a lista de microfones encontrados
+
+MÉTODO calibrate_noise_level():
+PASSO 2.3 - Abre a escuta do microfone por 1 a 2 segundos em silêncio ambiente
+PASSO 2.4 - Calcula o ruído médio de fundo e ajusta dinamicamente [energy_threshold] e [volume_threshold]
+PASSO 2.5 - Salva o novo limiar calibrado no arquivo database_general.json
+
+
+================================= 3. FLUXO DE CAPTURA DE ÁUDIO EM TEMPO REAL (LISTEN)
+
+MÉTODO start_listening():
+PASSO 3.1 - Abre a transmissão do microfone [input_device] usando os parâmetros [samplerate] e [channels]
+
+PASSO 3.2 - MONITORAMENTO DE ENTRADA (LOOP DE ESCUTA):
+    - Fica lendo blocos de áudio ([blocksize])
+    - Aplica o [microphone_gain] ao sinal recebido
+    - SE [remove_noise] == true: aplica filtro básico de redução de ruído
+    - Calcula o volume/energia instantânea do bloco
+
+PASSO 3.3 - DETECÇÃO DE INÍCIO DA FALA:
+    - SE volume < [volume_threshold]:
+        * Continua aguardando silêncio (não inicia gravação)
+    - SE volume >= [volume_threshold]:
+        * Inicia a gravação/empilhamento dos dados de áudio
+        * Dispara o cronômetro de tempo máximo ([max_speech_time])
+        * Avança para PASSO 3.4
+
+PASSO 3.4 - DETECÇÃO DE FIM DA FALA:
+    - Enquanto grava, monitora pausas na fala:
+    - SE volume cair abaixo do limiar durante o período de [silence_time]:
+        * Considera que a fala terminou
+        * Encerra a captura de áudio
+        * Avança para PASSO 3.5
+    - SE o tempo total atingir [max_speech_time]:
+        * Força o encerramento da captura por tempo limite
+        * Avança para PASSO 3.5
+
+PASSO 3.5 - TRATAMENTO DO ÁUDIO CAPTURADO:
+    - SE [normalize_audio] == true: ajusta o pico do áudio gravado
+    - Converte os blocos de memória para o formato aceito pelo motor de reconhecimento (WAV/PCM)
+    - Chama o MÉTODO recognize_audio(audio_bytes)
+
+
+================================= 4. MOTOR DE RECONHECIMENTO (SPEECH-TO-TEXT)
+
+MÉTODO recognize_audio(audio_bytes):
+PASSO 4.1 - Identifica o motor definido em [recognition_engine]:
+
+    - SE [recognition_engine] == "azure":
+        * Envia o buffer de áudio para a API do Azure Speech Services
+        * Passa a chave e o idioma [recognition_language]
+        * Retorna o texto convertido pela nuvem
+
+    - SE [recognition_engine] == "google":
+        * Envia para a API Google Speech Recognition
+        * Passa o idioma [recognition_language]
+        * Retorna o texto convertido
+
+    - SE [recognition_engine] == "sphinx" / local:
+        * Processa offline via biblioteca local
+        * Retorna o texto convertido
+
+PASSO 4.2 - TRATAMENTO DE ERROS E FALLBACK:
+    - Se a API falhar ou houver problema de conexão:
+        * Tenta o próximo motor disponível em [engine_options]
+        * Se não houver retorno de áudio inteligível: retorna texto vazio "" ou erro "AUDIO_NOT_UNDERSTOOD"
+
+PASSO 4.3 - RETORNO FINAL:
+    - Retorna a string com o texto transcrito para ser processada pelo config_assistant.py
+
+
+================================= 5. MÉTODOS EXPOSTOS PARA O SISTEMA
+
+A classe disponibiliza os seguintes métodos externos:
+- get_text_from_mic(): Executa o ciclo completo de escuta e retorna a string transcrita.
+- update_settings(): Atualiza as configurações de entrada recarregando do JSON.
+- set_microphone_device(device_id): Altera o microfone ativo.

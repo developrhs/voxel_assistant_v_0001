@@ -1,0 +1,122 @@
+=================================( command_mode_office.py
+Comando que ativa o Modo Office - transforma fala em texto e controla o Office
+
+PASSO 1 - Quando chamado, recebe uma palavra-chave
+Exemplo: "modo office" ou "ativar modo office"
+
+PASSO 2 - Conecta ao banco de dados D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+
+PASSO 3 - Procura na tabela tb_condition onde [tb_condition_key] é igual à palavra-chave recebida
+
+PASSO 4 - Mostra a mensagem da coluna [tb_condition_response] que está na tabela
+Exemplo: "Modo Office ativado. Diga 'Ajuda Modo Office' para ver os comandos disponíveis"
+
+PASSO 5 - ATIVA O MODO OFFICE:
+    PASSO 5.1 - Desabilita todos os comandos de voz normais
+    PASSO 5.2 - Tudo que for falado será capturado como texto
+    PASSO 5.3 - Fica ouvindo apenas os comandos do Modo Office
+    PASSO 5.4 - Qualquer fala que não for comando do Office é digitada como texto
+
+PASSO 6 - LISTA DE COMANDOS DO MODO OFFICE:
+
+    COMANDOS DE TEXTO:
+    - Palavras normais: digita o texto falado
+    - "Pular linha" ou "Saltar linha": aperta a tecla Enter
+    - "Ponto final": digita "."
+    - "Vírgula": digita ","
+    - "Ponto e vírgula": digita ";"
+    - "Dois pontos": digita ":"
+    - "Ponto de exclamação": digita "!"
+    - "Ponto de interrogação": digita "?"
+    - "Abre parênteses": digita "("
+    - "Fecha parênteses": digita ")"
+    - "Abre aspas": digita '"'
+    - "Fecha aspas": digita '"'
+    - "Espaço": aperta a tecla Espaço
+    - "Apagar" ou "Deletar": aperta a tecla Delete
+    - "Apagar tudo": seleciona todo o texto e deleta
+    - "Desfazer": aperta Ctrl + Z
+    - "Refazer": aperta Ctrl + Y
+
+    COMANDOS DE SELEÇÃO:
+    - "Selecionar tudo": aperta Ctrl + A
+    - "Selecionar palavra": seleciona a palavra atual
+    - "Selecionar linha": seleciona a linha atual
+
+    COMANDOS DE FORMATAÇÃO:
+    - "Negrito" ou "Deixar negrito": aperta Ctrl + N (ou Ctrl + B)
+    - "Itálico" ou "Deixar itálico": aperta Ctrl + I
+    - "Sublinhado" ou "Deixar sublinhado": aperta Ctrl + S (ou Ctrl + U)
+    - "Tachado" ou "Deixar tachado": aplica tachado no texto selecionado
+    - "Aumentar fonte": aumenta o tamanho da fonte
+    - "Diminuir fonte": diminui o tamanho da fonte
+    - "Maiúsculo": transforma texto selecionado em maiúsculo
+    - "Minúsculo": transforma texto selecionado em minúsculo
+
+    COMANDOS DE ALINHAMENTO:
+    - "Alinhar à esquerda": aperta Ctrl + Q (ou Ctrl + L)
+    - "Alinhar à direita": aperta Ctrl + G (ou Ctrl + R)
+    - "Centralizar" ou "Alinhamento centralizado": aperta Ctrl + E
+    - "Justificar": aperta Ctrl + J
+
+    COMANDOS DE EDIÇÃO:
+    - "Copiar" ou "Copiar conteúdo": aperta Ctrl + C
+    - "Colar" ou "Colar conteúdo": aperta Ctrl + V
+    - "Recortar" ou "Recortar conteúdo": aperta Ctrl + X
+    - "Localizar" ou "Buscar": aperta Ctrl + L (ou Ctrl + F)
+    - "Substituir": aperta Ctrl + U (ou Ctrl + H)
+
+    COMANDOS DE ARQUIVO:
+    - "Salvar" ou "Salvar arquivo": aperta Ctrl + B (ou Ctrl + S)
+    - "Salvar como" ou "Salvar novo": aperta F12
+    - "Novo arquivo": aperta Ctrl + O (ou Ctrl + N)
+    - "Abrir arquivo": aperta Ctrl + A (ou Ctrl + O)
+    - "Fechar arquivo": aperta Ctrl + W
+    - "Imprimir": aperta Ctrl + P
+
+    COMANDOS DE REVISÃO:
+    - "Correção ortográfica" ou "Ortografia": aperta F7
+    - "Dicionário de sinônimos": abre o dicionário de sinônimos
+    - "Contar palavras": mostra contagem de palavras
+
+    COMANDOS DE LISTA:
+    - "Lista com marcadores": aplica marcadores
+    - "Lista numerada": aplica numeração
+    - "Aumentar recuo": aumenta o recuo do parágrafo
+    - "Diminuir recuo": diminui o recuo do parágrafo
+
+    COMANDOS DE NAVEGAÇÃO:
+    - "Ir para o início": aperta Ctrl + Home
+    - "Ir para o fim": aperta Ctrl + End
+    - "Próxima página": aperta Page Down
+    - "Página anterior": aperta Page Up
+    - "Início da linha": aperta Home
+    - "Fim da linha": aperta End
+
+    COMANDOS DE AJUDA:
+    - "Ajuda Modo Office" ou "Ajuda Office": lista todos os comandos disponíveis
+    - "Listar comandos": lista os comandos principais
+
+    COMANDO DE SAÍDA:
+    - "Desativar Modo" ou "Sair do Modo Office" ou "Desativar Modo Office"
+
+PASSO 7 - SE usuário falar "Ajuda Modo Office" ou "Ajuda Office":
+    PASSO 7.1 - O assistente lista os comandos organizados por categoria
+    PASSO 7.2 - Fala: "Comandos disponíveis no Modo Office:"
+    PASSO 7.3 - Lista as categorias uma por uma
+    PASSO 7.4 - Pergunta: "Deseja ouvir todos os comandos ou alguma categoria específica?"
+    
+PASSO 8 - SE usuário falar "Desativar Modo" ou "Sair do Modo Office" ou "Desativar Modo Office":
+    PASSO 8.1 - Desativa o Modo Office
+    PASSO 8.2 - Reativa todos os comandos de voz normais
+    PASSO 8.3 - Para de capturar fala como texto
+    PASSO 8.4 - Mostra a mensagem: "Modo Office desativado. Comandos de voz restaurados"
+
+PASSO 9 - SE usuário falar qualquer outro comando da lista:
+    PASSO 9.1 - Executa a ação correspondente
+    PASSO 9.2 - Se for comando de texto, digita o texto
+    PASSO 9.3 - Se for comando de atalho, executa o atalho do teclado
+
+PASSO 10 - SE usuário falar algo que não é comando:
+    PASSO 10.1 - Digita o texto falado normalmente
+    PASSO 10.2 - Exemplo: falar "Prezados senhores" digita "Prezados senhores"

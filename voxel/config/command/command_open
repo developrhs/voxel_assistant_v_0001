@@ -1,0 +1,57 @@
+import os
+import sqlite3
+import subprocess
+from pathlib import Path
+
+
+class CommandOpen:
+    def __init__(self, project_root=None):
+        self.project_root = Path(project_root) if project_root else Path(__file__).resolve().parents[2]
+        self.database_path = self.project_root / "config" / "database" / "db" / "db_virtual_assistant.db"
+
+    def find_condition(self, keyword):
+        with sqlite3.connect(self.database_path) as connection:
+            return connection.execute(
+                """
+                SELECT tb_condition_file, tb_condition_response
+                FROM tb_condition
+                WHERE LOWER(tb_condition_key) = LOWER(?)
+                  AND tb_condition_status = 'ativo'
+                LIMIT 1
+                """,
+                (str(keyword).strip(),),
+            ).fetchone()
+
+    def open_folder(self, keyword):
+        condition = self.find_condition(keyword)
+        if condition is None:
+            return {
+                "status": "CONDITION_NOT_FOUND",
+                "message": "Pasta não encontrada.",
+            }
+
+        folder, response = condition
+        folder_path = Path(folder).expanduser()
+        if not folder_path.is_dir():
+            return {
+                "status": "FOLDER_NOT_FOUND",
+                "message": "A pasta configurada não existe.",
+                "path": str(folder_path),
+            }
+
+        if os.name == "nt":
+            subprocess.Popen(["explorer.exe", str(folder_path)])
+        else:
+            raise OSError("O Explorer está disponível apenas no Windows.")
+
+        return {
+            "status": "SUCCESS",
+            "message": response,
+            "path": str(folder_path),
+        }
+
+    def execute(self, keyword):
+        return self.open_folder(keyword)
+
+    def run(self, keyword):
+        return self.open_folder(keyword)

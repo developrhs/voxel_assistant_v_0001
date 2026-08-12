@@ -1,0 +1,118 @@
+=================================( config_assistant.py
+Arquivo de gerenciamento das preferências, regras de interação e roteamento do assistente.
+
+OBJETIVO PRINCIPAL:
+Classe/módulo responsável por:
+1. Carregar as preferências globais do arquivo /config/database/database_general.json
+2. Controlar o fluxo de validação de comandos com base na palavra mestre (keyword_master)
+3. Gerenciar o timer e o estado do sistema de ociosidade
+4. Consultar o banco /config/database/db/db_virtual_assistant.db para identificar comandos e condições
+5. Retornar os parâmetros exatos para o executor de comandos rodar o script Python correto (.py)
+
+
+================================= 1. INICIALIZAÇÃO E CARREGAMENTO DE CONFIGURAÇÕES
+
+AO INICIAR A CLASSE ASSISTANTCONFIG:
+PASSO 1.1 - Conecta ao arquivo D:/assistant/voxel/config/database/database_general.json
+PASSO 1.2 - Lê e armazena em memória as seguintes chaves do JSON:
+    - [keyword_status] (booleano: obrigatoriedade da palavra mestre)
+    - [keyword_master] (string: palavra de ativação, ex: "Chat")
+    - [awaiting_duration_status] (booleano: ativação do sistema de ociosidade)
+    - [awaiting_duration] (string: tempo de espera formatado, ex: "120s", "5m", "1h")
+    - [waiting_id_command] (inteiro: ID do comando executado no estouro de ociosidade)
+PASSO 1.3 - Inicializa os atributos internos de controle:
+    - [idle_counter] = 0 (contador em segundos)
+    - [is_idle_running] = false (flag de estado do timer)
+
+
+================================= 2. MÉTODO DE CONVERSÃO DE TEMPO DE OCIOSIDADE
+
+MÉTODO parse_awaiting_duration():
+PASSO 2.1 - Obtém a string de [awaiting_duration]
+PASSO 2.2 - Avalia o último caractere da string:
+    - Se terminar com "s": extrai o número (ex: "120s" -> 120 segundos)
+    - Se terminar com "m": extrai o número e multiplica por 60 (ex: "5m" -> 300 segundos)
+    - Se terminar com "h": extrai o número e multiplica por 3600 (ex: "1h" -> 3600 segundos)
+PASSO 2.3 - Retorna [tempo_limite_segundos]
+
+
+================================= 3. LÓGICA DE PROCESSAMENTO E FILTRAGEM DE ENTRADA (PROCESS_INPUT)
+
+MÉTODO process_user_input(texto_recebido):
+PASSO 3.1 - Limpa o texto recebido (remove espaços extras nas pontas e converte para caixa baixa para comparação).
+
+PASSO 3.2 - VERIFICAÇÃO DA PALAVRA MESTRE:
+    SE [keyword_status] == true:
+        - Verifica se o texto_recebido COMEÇA com a [keyword_master]
+        - SE NÃO COMEÇAR:
+            * IGNORA O TEXTO TOTALMENTE
+            * NÃO RESETA [idle_counter]
+            * Retorna estado: INTERAÇÃO_IGNORADA (Silêncio total)
+        - SE COMEÇAR:
+            * Remove a [keyword_master] do início do texto
+            * [texto_comando] = texto restante limpo
+            * Reseta [idle_counter] = 0 (Interação detectada)
+            * Avança para PASSO 3.3
+
+    SE [keyword_status] == false:
+        * [texto_comando] = texto_recebido
+        * Reseta [idle_counter] = 0
+        * Avança para PASSO 3.3
+
+PASSO 3.3 - BUSCA DE COMANDO NO BANCO DE DADOS:
+    - Abre conexão com D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+    - Executa consulta SQL na tabela [tb_command]:
+      "SELECT tb_command_id, tb_command_file, tb_command_status 
+       FROM tb_command 
+       WHERE LOWER(tb_command_key) = LOWER([texto_comando]) AND tb_command_status = 'ativo'"
+
+    - SE ENCONTRAR O COMANDO:
+        * Coleta [tb_command_id] e [tb_command_file]
+        * Verifica se o comando exige busca condicional na tabela [tb_condition]:
+          "SELECT tb_condition_key, tb_condition_question, tb_condition_file, tb_condition_response 
+           FROM tb_condition 
+           WHERE tb_condition_tb_command_id = [tb_command_id] AND tb_condition_status = 'ativo'"
+        * Retorna objeto com: {status: "SUCCESS", command_id, script_file, conditions}
+
+    - SE NÃO ENCONTRAR O COMANDO:
+        * O usuário disse a palavra mestre, mas o comando é inválido.
+        * Retorna objeto com: {
+            status: "COMMAND_NOT_FOUND", 
+            message: "Comando não encontrado. Diga 'ajuda' para ver a lista de comandos disponíveis."
+          }
+
+
+================================= 4. GERENCIADOR DO TIMER DE OCIOSIDADE (IDLE MONITOR)
+
+MÉTODO tick_idle_timer():
+PASSO 4.1 - SE [awaiting_duration_status] == false:
+    - Retorna sem fazer nada (sistema desligado)
+
+PASSO 4.2 - SE [awaiting_duration_status] == true:
+    - [idle_counter] = [idle_counter] + 1
+    - SE [idle_counter] >= [tempo_limite_segundos]:
+        * Ativa o evento de ociosidade
+        * Reseta [idle_counter] = 0
+        * Chama MÉTODO trigger_idle_command()
+
+MÉTODO trigger_idle_command():
+PASSO 4.3 - Conecta ao D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+PASSO 4.4 - Busca o comando de ociosidade configurado:
+    "SELECT tb_command_file, tb_command_status 
+     FROM tb_command 
+     WHERE tb_command_id = [waiting_id_command] AND tb_command_status = 'ativo'"
+
+PASSO 4.5 - SE ENCONTRAR O COMANDO:
+    - Retorna os dados para execução do script associado (ex: command_weather.py)
+PASSO 4.6 - SE NÃO ENCONTRAR O COMANDO:
+    - Retorna mensagem padrão fallback:
+      "São [hora_atual] do dia [data_atual]. Posso ajudar em algo?"
+
+
+================================= 5. SAÍDAS E INTEGRAÇÃO
+
+A classe expõe os seguintes métodos para uso no sistema principal/chatbot:
+- reload_settings(): Recarrega as chaves do database_general.json em tempo de execução.
+- process_input(texto): Processa entradas de texto/voz segundo as regras mestre/comando.
+- reset_idle_timer(): Força a zeragem do contador de ociosidade.
+- update_timer(): Incrementa a contagem do timer a cada segundo via loop da aplicação principal.

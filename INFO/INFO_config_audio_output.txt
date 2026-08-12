@@ -1,0 +1,74 @@
+=================================( config_audio_output.py
+Arquivo responsável por gerenciar a conversão de texto em fala (Text-to-Speech / TTS)
+e reproduzir as respostas do assistente nos alto-falantes/dispositivos de saída.
+
+OBJETIVO PRINCIPAL:
+Classe/módulo responsável por:
+1. Carregar as configurações de voz e áudio do /config/database/database_general.json
+2. Inicializar o motor principal de síntese de voz e configurar os fallbacks (mecanismos de reserva)
+3. Converter strings de texto recebidas do assistente/chatbot em áudio
+4. Ajustar parâmetros de reprodução (velocidade, tom, gênero, volume, sotaque) em tempo real
+5. Gerenciar os dispositivos de saída e o fluxo de reprodução de áudio
+
+
+================================= 1. INICIALIZAÇÃO E CARREGAMENTO DE CONFIGURAÇÕES
+
+AO INICIAR A CLASSE AUDIOOUTPUTCONFIG:
+PASSO 1.1 - Conecta ao arquivo D:/assistant/voxel/config/database/database_general.json
+PASSO 1.2 - Lê e armazena em memória os parâmetros da chave [voice_config]:
+    - [primary_engine] (motor principal: "google_tts", "pyttsx3", "edge_tts")
+    - [fallback_engine] (motor secundário de emergência, ex: "pyttsx3")
+    - [use_fallback] (booleano: ativa/desativa motor reserva)
+    - [voice_language] (idioma da voz, ex: "en" ou "pt")
+    - [accent] (sotaque/região, ex: "com", "com.br")
+    - [voice_gender] (gênero da voz: "female", "male")
+    - [pyttsx3_rate] (velocidade da fala para motor offline, ex: 150.0)
+    - [voice_volume] (volume da voz, entre 0.0 e 1.0)
+    - [playback_library] (biblioteca de reprodução: "sounddevice", "pygame")
+    - [output_device] (dispositivo de saída selecionado / null para padrão)
+    - [wait_for_audio_end] (booleano: se o sistema deve aguardar a fala terminar para continuar)
+
+
+================================= 2. INICIALIZAÇÃO DOS MOTORES DE SÍNTESE DE VOZ (TTS)
+
+MÉSTATIC/MÉTODO setup_tts_engines():
+PASSO 2.1 - Prepara o [primary_engine]:
+    - Se for "google_tts" (gTTS): prepara requisição via API de síntese.
+    - Se for "edge_tts": inicializa conexões com vozes neurais da Microsoft.
+    - Se for "pyttsx3": inicializa a biblioteca local offline, aplicando [pyttsx3_rate] e selecionando a voz por [voice_gender].
+PASSO 2.2 - Prepara o [fallback_engine] (geralmente pyttsx3) para garantir fala mesmo se a internet cair.
+
+
+================================= 3. FLUXO DE CONVERSÃO DE TEXTO EM FALA (SPEAK)
+
+MÉTODO speak(text_to_speak):
+PASSO 3.1 - RECEBIMENTO E TRATAMENTO DE TEXTO:
+    - Recebe a string gerada pelo config_chatbot.py ou pelos comandos.
+    - Limpa caracteres especiais não pronunciáveis ou formatações markdown (como **, ##).
+
+PASSO 3.2 - TENTATIVA DE GERAÇÃO COM MOTOR PRINCIPAL:
+    - SE [primary_engine] estiver ativo:
+        * Tenta converter [text_to_speak] usando [voice_language], [accent] e [voice_gender].
+        * Gera o arquivo temporário/buffer de áudio em memória.
+    - SE HOUVER ERRO (ex: sem internet para Google/Edge TTS) E [use_fallback] == true:
+        * Redireciona automaticamente a geração para o [fallback_engine] (motor local offline).
+
+PASSO 3.3 - REPRODUÇÃO DO ÁUDIO:
+    - Carrega o buffer/arquivo de áudio gerado.
+    - Envia para o dispositivo de saída [output_device] através da [playback_library] ("sounddevice" ou "pygame").
+    - Aplica o [voice_volume] configurado.
+
+PASSO 3.4 - CONTROLE DE SINCRONISMO:
+    - SE [wait_for_audio_end] == true:
+        * Bloqueia a execução do sistema até que a reprodução da fala termine (evita que o microfone escute a própria voz da assistente).
+    - SE [wait_for_audio_end] == false:
+        * Executa a fala em uma thread paralela (assíncrona).
+
+
+================================= 4. MÉTODOS DE AJUSTE E CONTROLE EXPOSTOS
+
+A classe expõe as seguintes funções para uso externo:
+- speak_text(text): Método principal para ser chamado pelo assistente/chatbot para falar.
+- stop_speaking(): Interrompe imediatamente qualquer áudio que esteja sendo reproduzido no momento.
+- set_volume(level): Ajusta o volume da saída em tempo real (0.0 a 1.0).
+- update_voice_settings(): Recarrega as configurações do JSON caso o usuário mude idioma, gênero de voz ou motor na tela de configurações.

@@ -1,0 +1,10 @@
+=================================( command_open.py
+Comando para abrir pastas no explorador de arquivos
+
+PASSO 1 - Quando chamado, recebe uma palavra-chave
+PASSO 2 - Conecta ao banco de dados D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+PASSO 3 - Procura na tabela tb_condition onde [tb_condition_key] é igual à palavra-chave recebida
+PASSO 4 - Pega o [tb_condition_file] correspondente (caminho da pasta)
+PASSO 5 - Abre a pasta usando o explorer.exe de forma maximizada
+PASSO 6 - Mostra a mensagem da coluna [tb_condition_response] que está na tabela
+Exemplo: "Abrindo pasta Documentos"

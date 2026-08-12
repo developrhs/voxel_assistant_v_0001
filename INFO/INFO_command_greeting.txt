@@ -1,0 +1,25 @@
+=================================( command_greeting.py
+Este é um comando de texto simples
+Sempre que acionado ele gera uma saudação personalizada
+
+PASSO 1 - Pega a hora atual [hour]
+PASSO 2 - Abre o arquivo D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+e coleta as informações na tabela tb_user:
+[tb_user_salutation] = tratamento do usuário (Sr., Sra., etc)
+[tb_user_first_name] = primeiro nome do usuário
+
+PASSO 3 - Define a saudação [greeting] baseado na hora:
+Se [hour] estiver entre 06:00 e 11:59:
+    [greeting] = "Bom dia"
+Se [hour] estiver entre 12:00 e 17:59:
+    [greeting] = "Boa tarde"
+Se [hour] estiver entre 18:00 e 23:59:
+    [greeting] = "Boa noite"
+Se [hour] estiver entre 00:00 e 05:59:
+    [greeting] = "Boa noite"
+    [addition_response] = "Está de madrugada, seria bom descansar um pouco!"
+
+PASSO 4 - Monta a resposta final:
+print [greeting] [tb_user_salutation] [tb_user_first_name] são [hour] [addition_response]
+
+Observação: [addition_response] só aparece de madrugada, nos outros horários fica vazio

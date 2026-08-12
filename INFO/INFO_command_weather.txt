@@ -1,0 +1,37 @@
+=================================( command_weather.py
+Comando para informar o clima de forma simples e amigável
+
+PASSO 1 - Pega a hora atual [hour]
+PASSO 2 - Pega a data de hoje [date]
+
+PASSO 3 - Abre o arquivo D:/assistant/voxel/config/database/db/db_virtual_assistant.db
+e coleta as informações na tabela tb_user:
+[tb_user_salutation] = tratamento do usuário (Sr., Sra., etc)
+[tb_user_first_name] = primeiro nome do usuário
+[tb_user_city] = cidade do usuário
+[tb_user_state] = estado do usuário
+
+PASSO 4 - Consulta o clima atual para [tb_user_city], [tb_user_state]
+e pega as informações:
+[temperature] = temperatura atual
+[weather_condition] = condição do tempo (ensolarado, nublado, chuvoso, etc)
+[wind_speed] = velocidade do vento
+
+PASSO 5 - Monta uma resposta amigável baseado nas condições:
+Se [weather_condition] for "ensolarado":
+    [response] = "Hoje está um dia muito bom de sol com temperatura de [temperature]°C, muito bom para um passeio!"
+Se [weather_condition] for "nublado":
+    [response] = "Hoje o dia está nublado com temperatura de [temperature]°C, tempo agradável para fazer algo tranquilo!"
+Se [weather_condition] for "chuvoso":
+    [response] = "Hoje está chovendo e a temperatura é de [temperature]°C, melhor ficar em casa e relaxar!"
+Se [weather_condition] for outro:
+    [response] = "Hoje o tempo está [weather_condition] com temperatura de [temperature]°C"
+
+PASSO 6 - Adiciona um toque pessoal no final da resposta:
+Se [wind_speed] for alta (acima de 20km/h):
+    adiciona "O vento está um pouco forte hoje, cuidado!"
+Se [wind_speed] for moderada ou baixa:
+    adiciona "O vento está bem tranquilo, dá até para sentir a brisa!"
+
+PASSO 7 - Mostra a resposta final:
+"[tb_user_salutation] [tb_user_first_name], [response] [comentário_do_vento]"

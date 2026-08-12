@@ -1,0 +1,97 @@
+=================================( config_local_ai.py
+Arquivo responsável por gerenciar a conexão, execução e histórico de conversas
+com modelos de Inteligência Artificial que rodam localmente na máquina (offline).
+
+OBJETIVO PRINCIPAL:
+Classe/módulo responsável por:
+1. Carregar os parâmetros da IA local do arquivo /config/database/database_general.json
+2. Inicializar o conector do motor selecionado (Ollama, llama.cpp, gpt4all, etc.)
+3. Gerenciar o contexto e o histórico de mensagens locais (memória da conversa)
+4. Enviar os prompts do usuário e receber as respostas geradas localmente
+5. Tratar parâmetros de geração (temperatura, top_p, max_tokens) em tempo real
+
+
+================================= 1. INICIALIZAÇÃO E CARREGAMENTO DE CONFIGURAÇÕES
+
+AO INICIAR A CLASSE LOCALAICONFIG:
+PASSO 1.1 - Conecta ao arquivo D:/assistant/voxel/config/database/database_general.json
+PASSO 1.2 - Lê e armazena em memória os parâmetros da chave [local_ai_config]:
+    - [default_model] (modelo/motor padrão, ex: "ollama", "llama_cpp", "gpt4all")
+    - [temperature] (criatividade da resposta, ex: 0.7)
+    - [top_p] (filtro de amostragem de palavras, ex: 0.9)
+    - [max_tokens] (tamanho máximo da resposta gerada, ex: "500")
+    - [use_history] (booleano: se deve manter o contexto da conversa)
+    - [max_history] (quantidade máxima de mensagens guardadas na memória, ex: "50")
+    - [installed_model_info] (informações sobre o modelo baixado no sistema)
+    - [auto_download_models] (booleano: se deve baixar modelos automaticamente)
+
+
+================================= 2. INICIALIZAÇÃO E VERIFICAÇÃO DO PROVEDOR LOCAL
+
+MÉTODO initialize_local_engine():
+PASSO 2.1 - Identifica o [default_model] selecionado:
+
+    - SE [default_model] == "ollama":
+        * Conecta ao serviço local do Ollama (localhost:11434)
+        * Verifica se o serviço está rodando e se o modelo está instalado
+
+    - SE [default_model] == "llama_cpp":
+        * Carrega os binários locais e o arquivo do modelo (.gguf) da pasta do sistema
+
+    - SE [default_model] == "gpt4all" ou "transformers":
+        * Inicializa as respectivas bibliotecas locais e carrega os pesos na memória (RAM/VRAM)
+
+    - SE [default_model] == "echo" ou "simple":
+        * Inicializa um modo de testes simples (fallback offline leve)
+
+PASSO 2.2 - SE o serviço/modelo não for encontrado:
+    - Retorna erro "LOCAL_AI_NOT_AVAILABLE" para o chatbot saber que precisa redirecionar ou avisar o usuário
+
+
+================================= 3. GERENCIAMENTO DE MEMÓRIA E HISTÓRICO (CHAT HISTORY)
+
+MÉTODO manage_history(user_prompt, ai_response):
+PASSO 3.1 - SE [use_history] == false:
+    - Limpa a lista de mensagens anteriores e não salva o contexto
+
+PASSO 3.2 - SE [use_history] == true:
+    - Adiciona a nova mensagem do usuário e a resposta da IA na memória [local_history]
+    - Converte [max_history] para número inteiro
+    - SE o tamanho de [local_history] ultrapassar [max_history]:
+        * Remove as mensagens mais antigas (FIFO - First In, First Out) para não estourar a memória
+
+
+================================= 4. FLUXO DE GERAÇÃO DE RESPOSTAS (GENERATE_RESPONSE)
+
+MÉTODO generate_response(prompt_texto):
+PASSO 4.1 - RECEBIMENTO DO PROMPT:
+    - Recebe o texto já processado pelo chatbot.
+    - Prepara o prompt de sistema (instrução de personalidade da assistente).
+
+PASSO 4.2 - MONTAGEM DA REQUISIÇÃO:
+    - Concatena: [Prompt de Sistema] + [Histórico da Conversa] + [prompt_texto].
+    - Configura os parâmetros de inferência lidos do JSON:
+        * temperature = [temperature]
+        * top_p = [top_p]
+        * max_tokens = [max_tokens]
+
+PASSO 4.3 - ENVIO E PROCESSAMENTO LOCAL:
+    - Envia a estrutura montada para o motor local ([default_model]).
+    - Aguarda o processamento (que roda usando CPU/GPU da máquina).
+
+PASSO 4.4 - RECEBIMENTO E TRATAMENTO DA RESPOSTA:
+    - Coleta o texto gerado pela IA.
+    - Remove espaços desnecessários e formatações indesejadas.
+    - Salva a interação chamando o MÉTODO manage_history().
+
+PASSO 4.5 - RETORNO FINAL:
+    - Retorna a string com a resposta gerada para o config_chatbot.py.
+
+
+================================= 5. MÉTODOS EXPOSTOS PARA O SISTEMA
+
+A classe disponibiliza os seguintes métodos externos:
+- get_local_response(prompt): Executa a geração e retorna a resposta de texto da IA local.
+- clear_history(): Limpa a memória de mensagens da sessão atual.
+- check_availability(): Retorna 'true' se o motor local estiver pronto para uso.
+- update_ai_settings(): Recarrega os parâmetros (temperatura, modelo, limite de histórico) do JSON.

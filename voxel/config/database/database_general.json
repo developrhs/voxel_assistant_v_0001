@@ -1,0 +1,266 @@
+{
+    "_comment": "General System Settings - Voxel Assistant",
+    "_version": "1.0.0",
+    "_last_modified": "2026-08-12 03:26:35",
+    "keyword_status": true,
+    "keyword_master": "Chat",
+    "awaiting_duration_status": true,
+    "awaiting_duration": "120s",
+    "waiting_id_command": 5,
+    "chatbot_output": {
+        "options": [
+            "Text",
+            "Voice",
+            "Both"
+        ],
+        "selected": "Both"
+    },
+    "user_input": {
+        "options": [
+            "Keyboard",
+            "Voice",
+            "Both"
+        ],
+        "selected": "Both"
+    },
+    "status_chatbot": {
+        "options": [
+            "Assistant",
+            "Artificial Intelligence",
+            "Both"
+        ],
+        "selected": "Assistant"
+    },
+    "status_ai": {
+        "options": [
+            "Online AI",
+            "Offline AI",
+            "Both"
+        ],
+        "selected": "Offline AI"
+    },
+    "language": "en-US",
+    "system_preferences": {
+        "start_with_windows": false,
+        "minimize_to_tray": true,
+        "theme": "light",
+        "theme_options": [
+            "dark",
+            "light",
+            "system"
+        ],
+        "font_size": "12",
+        "font_size_options": [
+            10,
+            11,
+            12,
+            14,
+            16,
+            18
+        ],
+        "notifications": true,
+        "notification_sound": true,
+        "auto_start_chat": false,
+        "interface_language": "en-US",
+        "language_options": [
+            "pt-BR",
+            "en-US",
+            "es-ES"
+        ]
+    },
+    "microphone_config": {
+        "input_device": null,
+        "input_device_options": [],
+        "samplerate": "44100",
+        "samplerate_options": [
+            16000,
+            22050,
+            44100,
+            48000
+        ],
+        "channels": "1",
+        "channels_options": [
+            1,
+            2
+        ],
+        "blocksize": "512",
+        "blocksize_options": [
+            256,
+            512,
+            1024,
+            2048
+        ],
+        "threshold_volume": 0.03,
+        "threshold_min": 0.001,
+        "threshold_max": 0.1,
+        "silence_time": "3.0",
+        "silence_time_options": [
+            1.0,
+            2.0,
+            3.0,
+            5.0,
+            10.0
+        ],
+        "max_speech_time": "20.0",
+        "speech_time_options": [
+            10,
+            20,
+            30,
+            60,
+            120
+        ],
+        "energy_threshold": 20.0,
+        "energy_min": 0,
+        "energy_max": 4000,
+        "dynamic_energy": true,
+        "recognition_engine": "azure",
+        "engine_options": [
+            "google",
+            "sphinx",
+            "wit",
+            "azure"
+        ],
+        "recognition_language": "en-US",
+        "language_options": [
+            "pt-BR",
+            "en-US",
+            "es-ES",
+            "fr-FR"
+        ],
+        "normalize_audio": true,
+        "remove_noise": false,
+        "microphone_gain": 1.0,
+        "gain_min": 0.5,
+        "gain_max": 3.0,
+        "calibration_profile": "normal",
+        "profile_options": [
+            "quiet",
+            "normal",
+            "noisy",
+            "very_noisy"
+        ]
+    },
+    "voice_config": {
+        "primary_engine": "google_tts",
+        "engine_options": [
+            "google_tts",
+            "pyttsx3",
+            "edge_tts"
+        ],
+        "fallback_engine": "pyttsx3",
+        "use_fallback": true,
+        "voice_language": "en",
+        "voice_language_options": [
+            "pt",
+            "en",
+            "es",
+            "fr"
+        ],
+        "accent": "com",
+        "accent_options": [
+            "com.br",
+            "pt",
+            "com",
+            "co.uk"
+        ],
+        "speech_speed": false,
+        "voice_gender": "female",
+        "gender_options": [
+            "female",
+            "male"
+        ],
+        "pyttsx3_rate": 150.0,
+        "rate_min": 50,
+        "rate_max": 400,
+        "voice_volume": 0.4,
+        "volume_min": 0.0,
+        "volume_max": 1.0,
+        "conversation_tone": "professional",
+        "tone_options": [
+            "professional",
+            "casual",
+            "friendly",
+            "formal",
+            "fun"
+        ],
+        "verbosity": "normal",
+        "verbosity_options": [
+            "minimal",
+            "normal",
+            "detailed"
+        ],
+        "confirm_commands": true,
+        "playback_library": "sounddevice",
+        "library_options": [
+            "sounddevice",
+            "pygame"
+        ],
+        "output_device": null,
+        "output_volume": 0.4,
+        "wait_for_audio_end": true
+    },
+    "local_ai_config": {
+        "default_model": "ollama",
+        "model_options": [
+            "echo",
+            "simple",
+            "gpt4all",
+            "llama_cpp",
+            "ollama",
+            "transformers"
+        ],
+        "temperature": 0.7,
+        "temperature_min": 0.0,
+        "temperature_max": 2.0,
+        "top_p": 0.9,
+        "top_p_min": 0.0,
+        "top_p_max": 1.0,
+        "max_tokens": "500",
+        "max_tokens_options": [
+            100,
+            250,
+            500,
+            1000,
+            2000
+        ],
+        "use_history": true,
+        "max_history": "50",
+        "max_history_options": [
+            10,
+            20,
+            50,
+            100
+        ],
+        "installed_model_info": "",
+        "auto_download_models": false
+    },
+    "online_ai_config": {
+        "provider": "none",
+        "provider_options": [
+            "none",
+            "openai",
+            "gemini",
+            "claude",
+            "deepseek",
+            "grok"
+        ],
+        "api_key": "",
+        "online_model": "gpt-3.5-turbo",
+        "online_model_options": [],
+        "custom_endpoint": "",
+        "use_proxy": false,
+        "proxy_url": "",
+        "request_timeout": "30",
+        "timeout_options": [
+            10,
+            15,
+            30,
+            60,
+            120
+        ],
+        "max_tokens_online": 1000,
+        "temperature_online": 0.7,
+        "save_history_online": true,
+        "local_fallback_mode": true
+    }
+}
