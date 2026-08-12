@@ -1,0 +1,17 @@
+# Dependências do projeto VOXEL
+# Bibliotecas padrão do Python não precisam ser instaladas.
+
+# Captura e processamento básico de áudio
+numpy>=1.24
+sounddevice>=0.4.6
+
+# Síntese e reprodução de voz
+pyttsx3>=2.90
+gTTS>=2.5.1
+edge-tts>=6.1.9
+pygame>=2.5.2
+
+# Motores de IA local
+transformers>=4.40.0
+gpt4all>=2.8.2
+llama-cpp-python>=0.2.90

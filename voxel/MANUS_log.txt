@@ -19,3 +19,7 @@
 2026-08-12 - 13:15:39 - VOXEL_virtual_assistant_v_0019 - Implementada e verificada a lógica de config/config_online_ai.py conforme INFO_config_online_ai.txt.
 2026-08-12 - 13:16:34 - VOXEL_virtual_assistant_v_0020 - Implementada e verificada a lógica de config/config_status.py com base nos estados definidos em database_general.json.
 2026-08-12 - 13:17:57 - VOXEL_virtual_assistant_v_0021 - Implementada e verificada a lógica de config/database_manager.py conforme INFO_database_manager.txt, usando as tabelas SQLite existentes.
+2026-08-12 - 13:32:28 - VOXEL_virtual_assistant_v_0022 - Implementada e verificada a lógica adicional de config/config_chatbot.py conforme INFO_config_chatbot.txt, com inicialização resiliente, processamento de mensagens, fallback de IA, saída e logs diários.
+2026-08-12 - 13:36:58 - VOXEL_virtual_assistant_v_0023 - Criados __init__.py e README.md nas 14 pastas do projeto, adicionado requirements.txt na raiz e verificada a compilação dos arquivos Python.
+2026-08-12 - 13:39:29 - VOXEL_virtual_assistant_v_0024 - Criados main_teste.py e main_teste.bat na raiz; executado main_teste.py --self-test com inicialização, processamento e verificação do sistema pelo terminal.
+2026-08-12 - 13:46:58 - VOXEL_virtual_assistant_v_0025 - Implementada GUI desktop em main.py conforme INFO_main_layout_telas_GUI.txt, com navegação Início/Assistente/Comandos/Configurações/Utilizador, chatbot, histórico SQLite, status e persistência JSON; validação de sintaxe e navegação runtime concluídas sob display virtual.
